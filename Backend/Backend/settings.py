@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,14 +78,11 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bombero_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Guerra_045!',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        # Esta es la URL armada con los mismos datos que pusiste en DBeaver
+        default='postgresql://postgres.fvcccswsjcahzndiclyi:Guerra_045!lol@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
+        conn_max_age=600
+    )
 }
 
 #Conexiones

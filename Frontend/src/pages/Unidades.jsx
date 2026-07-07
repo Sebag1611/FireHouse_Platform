@@ -10,6 +10,7 @@ const filtros = [
   { clave: 'emergencia', etiqueta: 'En emergencia' },
   { clave: 'servicio', etiqueta: 'En servicio' },
   { clave: 'taller', etiqueta: 'Fuera de servicio' },
+  { clave: 'acta', etiqueta: 'Acta de servicio'}
 ]
 
 export default function Unidades() {

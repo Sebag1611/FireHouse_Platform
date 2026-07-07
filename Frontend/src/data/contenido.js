@@ -9,60 +9,51 @@
 export const unidades = [
   {
     id: 'B-3',
-    nombre: 'Carro de Ataque B-3',
-    tipo: 'Bomba / Combate de Incendios',
-    marca: 'Mercedes-Benz Atego',
+    nombre: 'B-3',
+    tipo: 'Combate de incendios estructurales',
+    marca: 'Spartan Metro Star',
     anio: 2019,
     estado: 'disponible',
     descripcion:
-      'Unidad principal de combate de incendios estructurales. Estanque de 3.000 L y sistema de espuma AFFF.',
-  },
-  {
-    id: 'RX-3',
-    nombre: 'Rescate Vehicular RX-3',
-    tipo: 'Rescate Vehicular Ligero',
-    marca: 'Ford F-4000',
-    anio: 2021,
-    estado: 'disponible',
-    descripcion:
-      'Equipada con herramientas hidráulicas de extricación (mordaza, separador) para accidentes de tránsito.',
-  },
-  {
-    id: 'H-3',
-    nombre: 'Unidad HazMat H-3',
-    tipo: 'Materiales Peligrosos (HazMat)',
-    marca: 'Iveco Daily',
-    anio: 2018,
-    estado: 'servicio',
-    descripcion:
-      'Respuesta a incidentes con materiales peligrosos. Trajes nivel A/B y equipos de detección de gases.',
-  },
-  {
-    id: 'K9-3',
-    nombre: 'Unidad Canina USAR K9',
-    tipo: 'Búsqueda y Rescate (USAR K9)',
-    marca: 'Toyota Hilux',
-    anio: 2022,
-    estado: 'disponible',
-    descripcion:
-      'Apoyo a búsqueda y rescate de personas vivas con unidad canina certificada.',
-  },
-  {
-    id: 'Q-3',
-    nombre: 'Carro Aljibe Q-3',
-    tipo: 'Abastecimiento de Agua',
-    marca: 'Volkswagen Constellation',
-    anio: 2017,
-    estado: 'taller',
-    descripcion:
-      'Abastecimiento de agua en incendios de gran magnitud. Capacidad de estanque de 8.000 L.',
+      'Unidad principal de combate de incendios estructurales. Estanque de 4.000 L y Bomba Darley con 1250 GPM',
   },
   {
     id: 'BX-3',
-    nombre: 'Carro de Transporte BX-3',
+    nombre: 'BX-3',
+    tipo: 'Incendios',
+    marca: 'Renault Camiva ',
+    anio: 2003,
+    estado: 'disponible',
+    descripcion:
+      'Maquina de segunda intervencion para incendios, y principal para incendios en lugares de dificil acceso',
+  },
+  {
+    id: 'RH-3',
+    nombre: 'RH-3',
+    tipo: 'Materiales Peligrosos (HazMat) y Rescate Vehicular',
+    marca: 'Ferrara Cindinder',
+    anio: 2016,
+    estado: 'servicio',
+    descripcion:
+      'Respuesta a incidentes con materiales peligrosos y equipada con material de rescate vehicular',
+  },
+  
+  {
+    id: 'BT-3',
+    nombre: 'BT-3',
+    tipo: 'Abastecimiento',
+    marca: 'Iveco Trakker',
+    anio: 2019,
+    estado: 'taller',
+    descripcion:
+      'Abastecimiento de agua en incendios. Capacidad de estanque de 12.000 L y una bomba Magirus 750 GPM ',
+  },
+  {
+    id: 'J-3',
+    nombre: 'J-3',
     tipo: 'Transporte de Personal',
-    marca: 'Hyundai H1',
-    anio: 2020,
+    marca: 'Nissan xtrail',
+    anio: 2017,
     estado: 'emergencia',
     descripcion:
       'Traslado de voluntarios y equipamiento menor a la zona de operaciones.',
@@ -111,7 +102,7 @@ export const emergencias = [
     id: 'A-1041',
     fecha: '2026-06-26',
     hora: '18:47',
-    clave: '10-2-1 · Accidente Vehicular',
+    clave: '10-2-1 · Quema de Pastizal',
     sector: 'Av. Circunvalación',
   },
   {
@@ -125,17 +116,17 @@ export const emergencias = [
     id: 'A-1039',
     fecha: '2026-06-24',
     hora: '22:30',
-    clave: '10-0-2 · Amago de Incendio',
+    clave: '10-0-2 · Incendio en construccion de 3 pisos o mas',
     sector: 'Sector Centro',
   },
 ]
 
 // Etiquetas legibles para cada estado operativo (HU-13)
 export const estadosOperativos = {
-  disponible: { etiqueta: 'Disponible', color: 'var(--disponible)' },
-  emergencia: { etiqueta: 'En Emergencia', color: 'var(--emergencia)' },
-  servicio: { etiqueta: 'Acto de Servicio', color: 'var(--servicio)' },
-  taller: { etiqueta: 'Fuera de Servicio', color: 'var(--taller)' },
+  disponible: { etiqueta: 'Disponible', color: 'Green' },
+  emergencia: { etiqueta: 'En Emergencia', color: 'Orange' },
+  servicio: { etiqueta: 'Acto de Servicio', color: 'Blue' },
+  taller: { etiqueta: 'Fuera de Servicio', color: 'Red' },
 }
 
 // HU-08 — Estado de turno actual (banner del home)
