@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'Administracion',
+    'Operacion'
 ]
 
 MIDDLEWARE = [
@@ -76,7 +80,7 @@ WSGI_APPLICATION = 'Firehouse_platform_Backend.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         # Esta es la URL armada con los mismos datos que pusiste en DBeaver
-        default='postgresql://postgres.vptpunurbxbekodlpmro:Guerra_045!lol@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true',
+        default='postgresql://postgres.vptpunurbxbekodlpmro:Guerra_045!lol@aws-1-sa-east-1.pooler.supabase.com:5432/postgres',
         conn_max_age=600
     )
 }
