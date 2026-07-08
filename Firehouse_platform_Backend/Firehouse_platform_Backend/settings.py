@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import dj_database_url
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z873&re!)gj((#2!7#pm^l^4kr=ld4+5bg*x!2dz4973p-brsz'
+SECRET_KEY = SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -80,8 +84,7 @@ WSGI_APPLICATION = 'Firehouse_platform_Backend.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        # Esta es la URL armada con los mismos datos que pusiste en DBeaver
-        default='postgresql://postgres.vptpunurbxbekodlpmro:Guerra_045!lol@aws-1-sa-east-1.pooler.supabase.com:5432/postgres',
+        default=os.getenv('DATABASE_URL'),
         conn_max_age=600
     )
 }
@@ -93,6 +96,10 @@ CORS_ALLOWED_ORIGINS = [
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
