@@ -7,6 +7,7 @@ class Persona(models.Model):
     apellidos = models.CharField(max_length=100)
     telefono = models.CharField(max_length=50)
     correo = models.CharField(max_length=100)
+    contraseña = models.CharField(max_length=32)
     direccion = models.CharField(max_length=200)
 
     def __str__(self):
