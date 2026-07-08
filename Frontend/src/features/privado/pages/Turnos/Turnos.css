@@ -1,0 +1,173 @@
+/* ============================================================
+   Turnos · Planillas de asistencia (estilo votación)
+   ============================================================ */
+
+.planilla {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 24px;
+  margin-bottom: 22px;
+}
+
+.planilla__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.planilla__head h2 {
+  font-size: 1.25rem;
+  margin-bottom: 6px;
+}
+
+.planilla__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gris);
+  font-size: 0.9rem;
+}
+
+.planilla__tag {
+  font-family: var(--display);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.planilla__tag--diurno {
+  color: var(--servicio);
+  background: color-mix(in srgb, var(--servicio) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--servicio) 35%, transparent);
+}
+
+.planilla__tag--nocturno {
+  color: var(--verde-claro);
+  background: color-mix(in srgb, var(--verde-claro) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde-claro) 35%, transparent);
+}
+
+.planilla__plazo {
+  color: var(--gris-tenue);
+  font-size: 0.86rem;
+  margin-bottom: 18px;
+}
+
+/* --- Lista de bloques --- */
+.bloques {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bloque {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: var(--radio-sm);
+  transition: background var(--transicion);
+}
+
+.bloque--marcable {
+  cursor: pointer;
+}
+
+.bloque--marcable:hover {
+  background: var(--carbon-2);
+}
+
+/* Marcador circular a la izquierda (vacío o con check). */
+.bloque__check {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+  transition: var(--transicion);
+}
+
+.bloque__check i {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--gris-tenue);
+}
+
+.bloque--mio .bloque__check {
+  background: var(--verde);
+}
+
+.bloque__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bloque__titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+
+.bloque__dia {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--humo);
+}
+
+.bloque__horario {
+  font-size: 0.86rem;
+  color: var(--gris-tenue);
+}
+
+/* Barra proporcional de anotados (como la votación). */
+.bloque__barra {
+  height: 7px;
+  background: var(--carbon);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bloque__relleno {
+  height: 100%;
+  background: var(--verde-claro);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+
+.bloque--mio .bloque__relleno {
+  background: var(--verde);
+}
+
+.bloque__conteo {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--humo);
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .planilla {
+    padding: 18px;
+  }
+  .bloque {
+    gap: 10px;
+  }
+}

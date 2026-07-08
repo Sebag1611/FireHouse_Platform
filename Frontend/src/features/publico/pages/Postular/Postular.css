@@ -1,0 +1,151 @@
+/* Título de cada bloque dentro del formulario */
+.form-bloque-titulo {
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--humo);
+  padding-bottom: 10px;
+  margin: 8px 0 20px;
+  border-bottom: 1px solid var(--borde);
+}
+.form-bloque-titulo:not(:first-child) {
+  margin-top: 28px;
+}
+
+/* Dropzone: estados ok / error */
+.dropzone__titulo {
+  margin-top: 8px;
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--humo);
+}
+
+.dropzone__ayuda {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--gris-tenue);
+  margin-top: 2px;
+}
+
+.dropzone--ok {
+  border-style: solid;
+  border-color: var(--disponible);
+  background: rgba(39, 194, 110, 0.06);
+}
+
+.dropzone--error {
+  border-color: var(--emergencia);
+}
+
+/* ---------- MODAL DE CONFIRMACIÓN ---------- */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(8, 12, 9, 0.72);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: aparecer 0.2s ease;
+}
+
+.modal {
+  background: var(--superficie);
+  color: var(--humo);
+  border: 1px solid var(--borde);
+  border-radius: 18px;
+  max-width: 440px;
+  width: 100%;
+  padding: 40px 34px 32px;
+  text-align: center;
+  box-shadow: var(--sombra);
+  animation: subir 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.modal__icono {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(21, 102, 63, 0.12);
+  color: var(--verde);
+}
+
+.modal__titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--humo);
+  margin-bottom: 12px;
+}
+
+.modal__texto {
+  color: var(--gris);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  margin-bottom: 22px;
+}
+
+.modal__codigo {
+  background: var(--carbon-2);
+  border: 1px dashed var(--verde);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+
+.modal__codigo span {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+  margin-bottom: 4px;
+}
+
+.modal__codigo strong {
+  font-family: var(--display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--verde-claro);
+}
+
+.modal__acciones {
+  display: flex;
+  gap: 12px;
+}
+
+.modal__acciones .btn {
+  flex: 1;
+  padding: 13px 16px;
+  font-size: 0.86rem;
+}
+
+/* Botón secundario del modal, adaptado a ambos temas. */
+.modal__acciones .btn-fantasma {
+  border-color: var(--borde);
+  color: var(--gris);
+  background: var(--carbon-2);
+}
+.modal__acciones .btn-fantasma:hover {
+  border-color: var(--verde);
+  color: var(--verde-osc);
+}
+
+@keyframes aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes subir {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 460px) {
+  .modal__acciones {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,13 @@
+/**
+ * ============================================================
+ *  ÍNDICE DE ESTILOS GLOBALES
+ * ============================================================
+ *  Punto único de entrada de los estilos base del sitio.
+ *  El orden importa: primero las variables (para que estén
+ *  disponibles), luego el reset base, y al final las utilidades.
+ * ============================================================
+ */
+
+@import './variables.css';
+@import './base.css';
+@import './utilidades.css';

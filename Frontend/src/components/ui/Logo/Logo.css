@@ -1,0 +1,41 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.logo__escudo {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.logo__texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.92;
+  font-family: var(--display);
+}
+
+.logo__texto strong {
+  font-size: 1.18rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--humo);
+}
+
+.logo__texto em {
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.32em;
+  color: var(--verde);
+}
+
+.logo--compacto .logo__texto strong {
+  font-size: 1rem;
+}
+.logo--compacto .logo__escudo {
+  width: 32px;
+  height: 32px;
+}
