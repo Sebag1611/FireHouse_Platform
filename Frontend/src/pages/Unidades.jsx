@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import { unidades, estadosOperativos } from '../data/contenido'
 import EstadoBadge from '../components/EstadoBadge'
 import { IconoCamion } from '../components/Iconos'
@@ -13,6 +13,7 @@ const filtros = [
   { clave: 'acta', etiqueta: 'Acta de servicio'}
 ]
 
+
 export default function Unidades() {
   const [filtro, setFiltro] = useState('todos')
 
@@ -20,6 +21,24 @@ export default function Unidades() {
     filtro === 'todos'
       ? unidades
       : unidades.filter((u) => u.estado === filtro)
+
+      
+  const [unidadesBackend, setUnidadesBackend] = useState([])
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/material-mayor/')
+      .then(response => response.json())
+      .then(data => {
+        setUnidadesBackend(data)
+        setCargando(false)
+      })
+      .catch(error => {
+        console.error("Error al conectar con Django:", error)
+        setCargando(false)
+      })
+  }, [])
+   
 
   return (
     <>
