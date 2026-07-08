@@ -1,1 +1,74 @@
+# =========================
+# Python / Django Backend
+# =========================
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+
+# Base de datos local Django
+db.sqlite3
+db.sqlite3-journal
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Variables de entorno
 .env
+
+
+# =========================
+# Django
+# =========================
+
+# Archivos temporales
+*.pot
+*.pyc
+
+# Archivos generados por Django
+staticfiles/
+
+# Media subida por usuarios
+media/
+
+
+# =========================
+# Frontend React / Node
+# =========================
+
+node_modules/
+dist/
+build/
+
+# Variables de entorno Frontend
+Frontend/.env
+Frontend/.env.local
+
+
+# =========================
+# IDE / Editores
+# =========================
+
+.vscode/
+.idea/
+
+# =========================
+# Sistema operativo
+# =========================
+
+.DS_Store
+Thumbs.db
+
+
+# =========================
+# Archivos temporales
+# =========================
+
+*.tmp
+*.swp
