@@ -4,22 +4,55 @@ import Logo from '../../../../components/ui/Logo'
 import { IconoEscudo } from '../../../../components/ui/Icono'
 import './Acceso.css'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 export default function Acceso() {
   const [usuario, setUsuario] = useState('')
   const [clave, setClave] = useState('')
   const [aviso, setAviso] = useState('')
+  const [cargando, setCargando] = useState(false)
   const navigate = useNavigate()
 
-  const entrar = (e) => {
+  const entrar = async (e) => {
     e.preventDefault()
+    setAviso('')
+
     if (!usuario.trim() || !clave.trim()) {
       setAviso('Ingresa tu usuario y contraseña.')
       return
     }
-    // Carcasa de demostración: cualquier credencial entra al panel.
-    // En producción, la autenticación y los roles se validan en el
-    // backend (JWT) antes de dar acceso al área privada.
-    navigate('/panel')
+
+    setCargando(true)
+
+    try {
+      const respuesta = await fetch(`${API_URL}/api/Administracion/login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rut: usuario,
+          'contraseña': clave,
+        }),
+      })
+
+      const datos = await respuesta.json()
+
+      if (!respuesta.ok) {
+        // El backend devuelve {"error": "..."} en los distintos casos
+        setAviso(datos.error || 'No se pudo iniciar sesión.')
+        return
+      }
+
+      // Login exitoso: guardamos los datos del usuario
+      localStorage.setItem('usuario', JSON.stringify(datos))
+
+      navigate('/panel')
+    } catch (error) {
+      setAviso('Error de conexión con el servidor. Intenta nuevamente.')
+    } finally {
+      setCargando(false)
+    }
   }
 
   return (
@@ -69,14 +102,16 @@ export default function Acceso() {
             ¿Olvidaste tu contraseña?
           </Link>
 
-          <button type="submit" className="btn btn-primario" style={{ width: '100%' }}>
-            Iniciar sesión
+          <button
+            type="submit"
+            className="btn btn-primario"
+            style={{ width: '100%' }}
+            disabled={cargando}
+          >
+            {cargando ? 'Ingresando...' : 'Iniciar sesión'}
           </button>
         </form>
 
-        <p className="acceso__roles">
-          Demostración: ingresa cualquier usuario y contraseña para entrar al panel.
-        </p>
         <Link to="/" className="acceso__volver">
           ← Volver al sitio público
         </Link>
