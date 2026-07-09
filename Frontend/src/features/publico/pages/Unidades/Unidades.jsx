@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { unidades, ESTADOS_OPERATIVOS } from '../../../../data/contenidoPublico'
+import { useState, useEffect } from 'react'
+import { ESTADOS_OPERATIVOS } from '../../../../data/contenidoPublico'
 import EstadoBadge from '../../../../components/ui/EstadoBadge'
 import { IconoCamion } from '../../../../components/ui/Icono'
 import './Unidades.css'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const filtros = [
   { clave: 'todos', etiqueta: 'Todas' },
@@ -14,6 +16,26 @@ const filtros = [
 
 export default function Unidades() {
   const [filtro, setFiltro] = useState('todos')
+  const [unidades, setUnidades] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const obtenerUnidades = async () => {
+      try {
+        const respuesta = await fetch(`${API_URL}/api/Operacion/MaterialMayor/listar/`)
+        if (!respuesta.ok) throw new Error('Error al obtener las unidades.')
+        const datos = await respuesta.json()
+        setUnidades(datos)
+      } catch (err) {
+        setError('No se pudieron cargar las unidades. Intenta más tarde.')
+      } finally {
+        setCargando(false)
+      }
+    }
+
+    obtenerUnidades()
+  }, [])
 
   const lista =
     filtro === 'todos'
@@ -35,7 +57,6 @@ export default function Unidades() {
 
       <section className="seccion">
         <div className="contenedor">
-          {/* Leyenda de estados */}
           <div className="leyenda">
             {Object.entries(ESTADOS_OPERATIVOS).map(([k, v]) => (
               <span className="leyenda__item" key={k}>
@@ -44,7 +65,6 @@ export default function Unidades() {
             ))}
           </div>
 
-          {/* Filtros */}
           <div className="filtros" role="tablist" aria-label="Filtrar unidades">
             {filtros.map((f) => (
               <button
@@ -61,23 +81,26 @@ export default function Unidades() {
             ))}
           </div>
 
-          {/* Grid de unidades */}
-          {lista.length === 0 ? (
+          {cargando ? (
+            <p className="vacio">Cargando unidades...</p>
+          ) : error ? (
+            <p className="vacio">{error}</p>
+          ) : lista.length === 0 ? (
             <p className="vacio">No hay unidades en este estado por ahora.</p>
           ) : (
             <div className="unidades-grid">
               {lista.map((u) => (
-                <article className="unidad-card" key={u.id}>
+                <article className="unidad-card" key={u.id_material}>
                   <div className="unidad-card__media">
                     <IconoCamion width={48} />
-                    <span className="unidad-card__codigo">{u.id}</span>
+                    <span className="unidad-card__codigo">{u.id_material}</span>
                   </div>
                   <div className="unidad-card__cuerpo">
                     <div className="unidad-card__top">
                       <h3>{u.nombre}</h3>
                       <EstadoBadge estado={u.estado} />
                     </div>
-                    <span className="unidad-card__tipo">{u.tipo}</span>
+                    <span className="unidad-card__tipo">{u.especialidad}</span>
                     <p>{u.descripcion}</p>
                     <dl className="unidad-card__specs">
                       <div>

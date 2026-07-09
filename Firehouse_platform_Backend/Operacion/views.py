@@ -35,3 +35,23 @@ def Obtener_Material_Mayor(request):
     }
     
     return Response(datos_especificos, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def Listar_Material_Mayor(request):
+    materiales = MaterialMayor.objects.all()
+    serializer = MaterialMayorSerializer(materiales, many=True)
+    
+    datos = [
+        {
+            "id_material": item.get("id_material"),
+            "nombre": item.get("nombre"),
+            "especialidad": item.get("especialidad"),
+            "marca": item.get("marca"),
+            "descripcion": item.get("descripcion"),
+            "anio": item.get("anio"),
+            "estado": item.get("estado")
+        }
+        for item in serializer.data
+    ]
+    
+    return Response(datos, status=status.HTTP_200_OK)
