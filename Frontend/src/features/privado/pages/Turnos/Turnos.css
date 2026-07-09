@@ -171,3 +171,174 @@
     gap: 10px;
   }
 }
+
+/* ---------- Encargado de turno ---------- */
+.planilla__encargado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+
+.planilla__encargado-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+}
+
+.planilla__encargado-nombre {
+  font-family: var(--display);
+  font-size: 1rem;
+  color: var(--verde-claro);
+}
+
+.planilla__encargado-select {
+  background: var(--superficie);
+  border: 1px solid var(--verde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  padding: 8px 12px;
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+}
+
+.planilla__encargado-select:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+/* ---------- Bloque cerrado / completo ---------- */
+.bloque--cerrado {
+  cursor: default;
+  opacity: 0.96;
+}
+
+.bloque--cerrado .bloque__check {
+  background: var(--gris-tenue);
+}
+
+.bloque__cerrado-tag {
+  font-family: var(--display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+  background: var(--carbon);
+  border: 1px solid var(--borde);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.bloque__relleno--lleno {
+  background: var(--gris-tenue);
+}
+
+/* Nombres revelados al cerrarse el bloque. */
+.bloque__seleccionados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 10px;
+}
+
+.bloque__seleccionados li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.84rem;
+  color: var(--gris);
+}
+
+.bloque__seleccionados li svg {
+  color: var(--verde-claro);
+}
+
+/* ---------- Botón editar bloque ---------- */
+.bloque__editar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris);
+  transition: var(--transicion);
+}
+
+.bloque__editar:hover {
+  border-color: var(--verde-claro);
+  color: var(--verde-claro);
+}
+
+/* ---------- Formulario de edición de bloque ---------- */
+.bloque--editando {
+  display: block;
+  background: var(--carbon-2);
+  border: 1px solid var(--verde);
+  border-radius: var(--radio-sm);
+  padding: 16px;
+  cursor: default;
+}
+
+.edicion-bloque__campos {
+  display: grid;
+  grid-template-columns: 1.3fr 1.3fr 0.8fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.edicion-bloque__campos label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--display);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+}
+
+.edicion-bloque__campos input {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.94rem;
+  padding: 9px 12px;
+  border-radius: var(--radio-sm);
+}
+
+.edicion-bloque__campos input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.edicion-bloque__campos input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edicion-bloque__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 620px) {
+  .edicion-bloque__campos {
+    grid-template-columns: 1fr;
+  }
+}

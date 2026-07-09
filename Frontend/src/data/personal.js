@@ -30,23 +30,32 @@ export const bomberos = [
 /* ------------------------------------------------------------
    TURNOS · Planillas de asistencia semanal
    ------------------------------------------------------------
-   El cambio de turno se hace cada dos semanas. Cada planilla
-   cubre una semana y se divide en BLOQUES (día + franja horaria).
-   Cada bombero se inscribe en los bloques que puede cubrir, y se
-   ve cuántos anotados lleva cada bloque (como en la votación de
-   WhatsApp que usa la compañía).
+   El cambio de turno rota cada semana. Cada planilla cubre una
+   semana, tiene un TENIENTE ENCARGADO y se divide en BLOQUES
+   (día + franja horaria), cada uno con un LÍMITE DE CUPOS.
 
-   Hay dos planillas típicas conviviendo:
-    - La de la semana en curso.
-    - La "continuación" para la semana siguiente.
+   Reglas:
+   - Los bomberos se anotan; los primeros en llenar el cupo quedan.
+   - Antes de cerrarse, se ve "anotados / cupos" (sin nombres).
+   - Cuando los anotados llegan al cupo, el bloque se CIERRA solo
+     y recién ahí se muestran los NOMBRES de los seleccionados.
+   - El encargado (o Directora/Capitán) puede editar cupos y
+     horarios, y designar al siguiente encargado.
+
+   Cada bloque guarda 'anotados' como lista de nombres (no solo un
+   número), para poder revelarlos al cerrarse.
    ------------------------------------------------------------ */
 
 // Franjas horarias del turno diurno (bloques de 4 horas).
 const FRANJAS_DIURNO = ['09:30 a 13:30', '13:30 a 17:30', '17:30 a 21:30']
 
-// Ayuda para construir los bloques de una planilla diurna.
-// Recibe los días y, para cada bloque, un número de anotados.
-function bloquesDiurno(dias, anotadosPorBloque) {
+/**
+ * Construye los bloques de una planilla diurna.
+ * @param {string[]} dias  - Días de la semana de la planilla.
+ * @param {number[]} cuposPorBloque   - Límite de cupos de cada bloque.
+ * @param {string[][]} anotadosPorBloque - Nombres ya anotados en cada bloque.
+ */
+function bloquesDiurno(dias, cuposPorBloque, anotadosPorBloque) {
   const bloques = []
   let i = 0
   for (const dia of dias) {
@@ -55,7 +64,8 @@ function bloquesDiurno(dias, anotadosPorBloque) {
         id: `${dia}-${franja}`.replace(/[\s:]/g, ''),
         dia,
         horario: franja,
-        anotados: anotadosPorBloque[i] ?? 0,
+        cupos: cuposPorBloque[i] ?? 4,
+        anotados: anotadosPorBloque[i] ?? [],
         inscritoYo: false,
       })
       i++
@@ -71,10 +81,24 @@ export const planillasTurno = [
     subtitulo: 'Semana del 24 al 30 de junio de 2026',
     plazo: 'Plazo: lunes 22 de junio a las 20:00 hrs.',
     tipo: 'diurno',
+    encargado: 'teniente2', // 302 · Omar Cruz
     bloques: bloquesDiurno(
       ['Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-      // Miér(0,0,0) · Jue(2,2,6) · Vie(4,4,4) · Sáb(2,1,1)
-      [0, 0, 0, 2, 2, 6, 4, 4, 4, 2, 1, 1]
+      // Cupos por bloque:
+      [4, 4, 4, 4, 4, 6, 4, 4, 4, 3, 2, 2],
+      // Nombres ya anotados por bloque:
+      [
+        [], [], [],
+        ['Juan Pacheco', 'Diego Fuentes'],
+        ['Camila Vega', 'Lissete Perez de Arce'],
+        ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce'],
+        ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza'],
+        ['Diego Fuentes', 'Lissete Perez de Arce', 'Camila Vega', 'Allison Maulen'],
+        ['Juan Pacheco', 'Camila Vega', 'Diego Fuentes', 'Natalia Anza'],
+        ['Diego Fuentes', 'Camila Vega'],
+        ['Allison Maulen'],
+        ['Juan Pacheco'],
+      ]
     ),
   },
   {
@@ -83,10 +107,21 @@ export const planillasTurno = [
     subtitulo: 'Semana siguiente',
     plazo: 'Completa los bloques que puedas cubrir.',
     tipo: 'diurno',
+    encargado: 'teniente1', // 301 · Jeferson Araya
     bloques: bloquesDiurno(
       ['Domingo', 'Lunes', 'Martes'],
-      // Dom(4,0,0) · Lun(3,3,4) · Mar(3,1,2)
-      [4, 0, 0, 3, 3, 4, 3, 1, 2]
+      [4, 3, 3, 3, 3, 4, 3, 2, 2],
+      [
+        ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza'], // Dom mañana lleno
+        [],
+        [],
+        ['Camila Vega', 'Diego Fuentes', 'Juan Pacheco'], // lleno
+        ['Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce'], // lleno
+        ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza'], // lleno
+        ['Juan Pacheco', 'Camila Vega', 'Diego Fuentes'],
+        ['Allison Maulen'],
+        ['Diego Fuentes', 'Lissete Perez de Arce'],
+      ]
     ),
   },
   {
@@ -95,15 +130,15 @@ export const planillasTurno = [
     subtitulo: 'Del miércoles 1 al martes 7 de julio',
     plazo: 'Franja única: 21:30 a 09:30 hrs.',
     tipo: 'nocturno',
-    // El turno nocturno es un solo bloque por día (21:30–09:30).
+    encargado: 'teniente3', // 303 · Pablo Valdes
     bloques: [
-      { id: 'noc-mie', dia: 'Miércoles 1', horario: '21:30 a 09:30', anotados: 7, inscritoYo: true },
-      { id: 'noc-jue', dia: 'Jueves 2', horario: '21:30 a 09:30', anotados: 5, inscritoYo: false },
-      { id: 'noc-vie', dia: 'Viernes 3', horario: '21:30 a 09:30', anotados: 7, inscritoYo: false },
-      { id: 'noc-sab', dia: 'Sábado 4', horario: '21:30 a 09:30', anotados: 7, inscritoYo: false },
-      { id: 'noc-dom', dia: 'Domingo 5', horario: '21:30 a 09:30', anotados: 6, inscritoYo: true },
-      { id: 'noc-lun', dia: 'Lunes 6', horario: '21:30 a 09:30', anotados: 4, inscritoYo: false },
-      { id: 'noc-mar', dia: 'Martes 7', horario: '21:30 a 09:30', anotados: 4, inscritoYo: false },
+      { id: 'noc-mie', dia: 'Miércoles 1', horario: '21:30 a 09:30', cupos: 7, anotados: ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce', 'Sebastián Guerra'], inscritoYo: true },
+      { id: 'noc-jue', dia: 'Jueves 2', horario: '21:30 a 09:30', cupos: 7, anotados: ['Camila Vega', 'Diego Fuentes', 'Juan Pacheco', 'Natalia Anza', 'Allison Maulen'], inscritoYo: false },
+      { id: 'noc-vie', dia: 'Viernes 3', horario: '21:30 a 09:30', cupos: 7, anotados: ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce', 'Diego Fuentes'], inscritoYo: false },
+      { id: 'noc-sab', dia: 'Sábado 4', horario: '21:30 a 09:30', cupos: 7, anotados: ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce', 'Camila Vega'], inscritoYo: false },
+      { id: 'noc-dom', dia: 'Domingo 5', horario: '21:30 a 09:30', cupos: 8, anotados: ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce'], inscritoYo: true },
+      { id: 'noc-lun', dia: 'Lunes 6', horario: '21:30 a 09:30', cupos: 6, anotados: ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza'], inscritoYo: false },
+      { id: 'noc-mar', dia: 'Martes 7', horario: '21:30 a 09:30', cupos: 6, anotados: ['Juan Pacheco', 'Camila Vega', 'Diego Fuentes', 'Allison Maulen'], inscritoYo: false },
     ],
   },
 ]

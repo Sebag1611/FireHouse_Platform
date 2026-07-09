@@ -32,6 +32,11 @@ export const PERMISOS = {
   GESTIONAR_COMUNICADOS: 'gestionar_comunicados',
   VER_TURNOS: 'ver_turnos',              // ver la planilla de turnos
   MARCAR_ASISTENCIA_TURNO: 'marcar_turno', // inscribirse en un bloque
+  // Configurar turnos: cambiar encargado, cupos y horarios. Base
+  // para Directora y Capitán; el teniente ENCARGADO de la semana
+  // también puede, aunque su nivel operativo no incluya este
+  // permiso (se resuelve aparte, según quién sea el encargado).
+  CONFIGURAR_TURNOS: 'configurar_turnos',
   VER_POSTULACIONES: 'ver_postulaciones',
 }
 
@@ -50,6 +55,7 @@ export const NIVELES = {
       PERMISOS.CAMBIAR_ESTADO_UNIDAD,
       PERMISOS.GESTIONAR_COMUNICADOS,
       PERMISOS.VER_TURNOS, // ven turnos, pero NO marcan asistencia
+      PERMISOS.CONFIGURAR_TURNOS, // Directora y Capitán configuran turnos
       PERMISOS.VER_POSTULACIONES,
     ],
   },
@@ -167,4 +173,12 @@ export function etiquetaNivel(idRango) {
 export function nombreConNumero(idRango) {
   const r = getRango(idRango)
   return r.numero ? `${r.numero} · ${r.persona}` : r.persona
+}
+
+// Lista de rangos que son Teniente (candidatos a encargado de turno).
+export const TENIENTES = RANGOS.filter((r) => r.id.startsWith('teniente'))
+
+// ¿El rango es uno de los tenientes?
+export function esTeniente(idRango) {
+  return idRango.startsWith('teniente')
 }

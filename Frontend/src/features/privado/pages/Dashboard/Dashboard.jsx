@@ -57,7 +57,7 @@ export default function Dashboard() {
           <div className="panel-box">
             <div className="panel-box__titulo">Planillas de turno</div>
             {planillasTurno.map((p) => {
-              const totalAnotados = p.bloques.reduce((s, b) => s + b.anotados, 0)
+              const totalAnotados = p.bloques.reduce((s, b) => s + b.anotados.length, 0)
               return (
                 <div className="mini-fila" key={p.id}>
                   <div>
