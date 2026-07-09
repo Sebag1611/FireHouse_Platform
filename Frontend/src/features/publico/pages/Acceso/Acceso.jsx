@@ -4,55 +4,70 @@ import Logo from '../../../../components/ui/Logo'
 import { IconoEscudo } from '../../../../components/ui/Icono'
 import './Acceso.css'
 
-const API_URL = import.meta.env.VITE_API_URL
-
 export default function Acceso() {
   const [usuario, setUsuario] = useState('')
   const [clave, setClave] = useState('')
   const [aviso, setAviso] = useState('')
-  const [cargando, setCargando] = useState(false)
   const navigate = useNavigate()
 
-  const entrar = async (e) => {
-    e.preventDefault()
-    setAviso('')
+  /**
+   * Limpia lo que el usuario escribe en el campo RUT, permitiendo
+   * SOLO dígitos (0-9) y la letra K como dígito verificador final.
+   * NO inserta el guion aquí: mientras se escribe, el guion saltaría
+   * de posición y molestaría. El guion se agrega al enviar (ver
+   * formatearConGuion), que es cuando el dato viaja a la BD.
+   */
+  const limpiarRut = (valor) => {
+    // Deja solo dígitos y la letra k/K.
+    let limpio = valor.replace(/[^0-9kK]/g, '')
+    // La 'k' solo vale como último carácter; si va en medio, se quita.
+    limpio = limpio.replace(/[kK]/g, (match, offset) =>
+      offset === limpio.length - 1 ? 'K' : ''
+    )
+    return limpio.toUpperCase()
+  }
 
-    if (!usuario.trim() || !clave.trim()) {
-      setAviso('Ingresa tu usuario y contraseña.')
+  /**
+   * Formatea el RUT al formato de la base de datos: cuerpo + guion +
+   * dígito verificador (ej. "12345678-9"). Se usa al enviar.
+   */
+  const formatearConGuion = (rutLimpio) => {
+    if (rutLimpio.length < 2) return rutLimpio
+    return `${rutLimpio.slice(0, -1)}-${rutLimpio.slice(-1)}`
+  }
+
+  const cambiarRut = (e) => {
+    // Mientras escribe: solo limpia (números + K), sin guion, para
+    // que el tecleo sea natural y el guion no salte de posición.
+    setUsuario(limpiarRut(e.target.value))
+    setAviso('')
+  }
+
+  const salirRut = () => {
+    // Al salir del campo (onBlur): agrega el guion antes del dígito
+    // verificador, dejándolo en el formato de la BD (12345678-9).
+    setUsuario((actual) => formatearConGuion(limpiarRut(actual)))
+  }
+
+  const entrar = (e) => {
+    e.preventDefault()
+    // Nos aseguramos de tener el RUT con guion aunque no se haya
+    // disparado el onBlur (ej. si envían con Enter directo).
+    const rut = formatearConGuion(limpiarRut(usuario))
+    if (!rut.trim() || !clave.trim()) {
+      setAviso('Ingresa tu RUT y contraseña.')
       return
     }
-
-    setCargando(true)
-
-    try {
-      const respuesta = await fetch(`${API_URL}/api/Administracion/login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          rut: usuario,
-          'contraseña': clave,
-        }),
-      })
-
-      const datos = await respuesta.json()
-
-      if (!respuesta.ok) {
-        // El backend devuelve {"error": "..."} en los distintos casos
-        setAviso(datos.error || 'No se pudo iniciar sesión.')
-        return
-      }
-
-      // Login exitoso: guardamos los datos del usuario
-      localStorage.setItem('usuario', JSON.stringify(datos))
-
-      navigate('/panel')
-    } catch (error) {
-      setAviso('Error de conexión con el servidor. Intenta nuevamente.')
-    } finally {
-      setCargando(false)
+    // Al menos 8 caracteres con el guion incluido (ej. 1234567-8).
+    if (rut.length < 8) {
+      setAviso('Ingresa un RUT válido (ej. 12345678-9).')
+      return
     }
+    // "rut" ya viaja en el formato que espera la base de datos.
+    // Carcasa de demostración: cualquier credencial válida entra.
+    // En producción, este RUT se envía al backend (JWT) para
+    // autenticar y resolver el rol antes de dar acceso al panel.
+    navigate('/panel')
   }
 
   return (
@@ -77,12 +92,15 @@ export default function Acceso() {
 
         <form onSubmit={entrar} className="acceso__form" noValidate>
           <div className="campo">
-            <label htmlFor="usuario">RUT o usuario</label>
+            <label htmlFor="usuario">RUT</label>
             <input
               id="usuario"
               value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
-              placeholder="12.345.678-9"
+              onChange={cambiarRut}
+              onBlur={salirRut}
+              placeholder="12345678-9 (sin puntos)"
+              inputMode="text"
+              maxLength={10}
               autoComplete="username"
             />
           </div>
@@ -102,16 +120,14 @@ export default function Acceso() {
             ¿Olvidaste tu contraseña?
           </Link>
 
-          <button
-            type="submit"
-            className="btn btn-primario"
-            style={{ width: '100%' }}
-            disabled={cargando}
-          >
-            {cargando ? 'Ingresando...' : 'Iniciar sesión'}
+          <button type="submit" className="btn btn-primario" style={{ width: '100%' }}>
+            Iniciar sesión
           </button>
         </form>
 
+        <p className="acceso__roles">
+          Demostración: ingresa cualquier usuario y contraseña para entrar al panel.
+        </p>
         <Link to="/" className="acceso__volver">
           ← Volver al sitio público
         </Link>
