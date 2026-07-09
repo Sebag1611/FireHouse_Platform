@@ -1,0 +1,9 @@
+Django
+gunicorn
+psycopg2-binary
+python-dotenv
+python-multipart
+djangorestframework
+django-cors-headers
+dj-database-url
+argon2-cffi
