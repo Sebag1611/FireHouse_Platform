@@ -2,6 +2,7 @@ import { useSesion } from '../../context'
 import { resumenPanel, comunicados, planillasTurno } from '../../../../data/personal'
 import { PERMISOS } from '../../../../data/roles'
 import { IconoGrupo, IconoCamion, IconoCalendario, IconoBandeja } from '../../../../components/ui/Icono'
+import EmergenciasResumen from '../../../../components/ui/EmergenciasResumen'
 import '../../estilos-panel.css'
 
 export default function Dashboard() {
@@ -35,9 +36,15 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Estadística de emergencias del año (motivación al cuerpo). */}
+      <div className="panel-box" style={{ marginBottom: 22 }}>
+        <div className="panel-box__titulo">Emergencias atendidas este año</div>
+        <EmergenciasResumen variante="panel" />
+      </div>
+
       <div className="panel-dashboard-grid">
-        {/* Últimos comunicados (solo quien los gestiona). */}
-        {puede(PERMISOS.GESTIONAR_COMUNICADOS) && (
+        {/* Últimos comunicados (todos los que pueden verlos). */}
+        {puede(PERMISOS.VER_COMUNICADOS) && (
           <div className="panel-box">
             <div className="panel-box__titulo">Últimos comunicados</div>
             {comunicados.slice(0, 3).map((c) => (

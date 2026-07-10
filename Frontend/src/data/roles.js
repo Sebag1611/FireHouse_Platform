@@ -29,7 +29,8 @@ export const PERMISOS = {
   CAMBIAR_RANGOS: 'cambiar_rangos',
   MOVER_MATERIAL: 'mover_material',
   CAMBIAR_ESTADO_UNIDAD: 'cambiar_estado_unidad',
-  GESTIONAR_COMUNICADOS: 'gestionar_comunicados',
+  VER_COMUNICADOS: 'ver_comunicados',        // ver y DESCARGAR documentos
+  GESTIONAR_COMUNICADOS: 'gestionar_comunicados', // además SUBIR documentos
   VER_TURNOS: 'ver_turnos',              // ver la planilla de turnos
   MARCAR_ASISTENCIA_TURNO: 'marcar_turno', // inscribirse en un bloque
   // Configurar turnos: cambiar encargado, cupos y horarios. Base
@@ -53,6 +54,7 @@ export const NIVELES = {
       PERMISOS.CAMBIAR_RANGOS,
       PERMISOS.MOVER_MATERIAL,
       PERMISOS.CAMBIAR_ESTADO_UNIDAD,
+      PERMISOS.VER_COMUNICADOS,
       PERMISOS.GESTIONAR_COMUNICADOS,
       PERMISOS.VER_TURNOS, // ven turnos, pero NO marcan asistencia
       PERMISOS.CONFIGURAR_TURNOS, // Directora y Capitán configuran turnos
@@ -69,6 +71,7 @@ export const NIVELES = {
       PERMISOS.VER_BOMBEROS,
       PERMISOS.MOVER_MATERIAL,
       PERMISOS.CAMBIAR_ESTADO_UNIDAD,
+      PERMISOS.VER_COMUNICADOS,
       PERMISOS.GESTIONAR_COMUNICADOS,
       PERMISOS.VER_TURNOS, // ven, no se inscriben
       PERMISOS.VER_POSTULACIONES,
@@ -84,6 +87,7 @@ export const NIVELES = {
       PERMISOS.VER_BOMBEROS,
       PERMISOS.MOVER_MATERIAL,
       PERMISOS.CAMBIAR_ESTADO_UNIDAD,
+      PERMISOS.VER_COMUNICADOS,
       PERMISOS.GESTIONAR_COMUNICADOS,
       PERMISOS.VER_TURNOS,
       PERMISOS.MARCAR_ASISTENCIA_TURNO,
@@ -98,6 +102,7 @@ export const NIVELES = {
       PERMISOS.VER_PANEL,
       PERMISOS.VER_BOMBEROS,
       PERMISOS.EDITAR_BOMBEROS, // la secretaria SÍ edita
+      PERMISOS.VER_COMUNICADOS,
       PERMISOS.GESTIONAR_COMUNICADOS,
       PERMISOS.VER_TURNOS,
       PERMISOS.MARCAR_ASISTENCIA_TURNO,
@@ -123,6 +128,7 @@ export const NIVELES = {
     color: 'var(--verde-claro)',
     permisos: [
       PERMISOS.VER_PANEL,
+      PERMISOS.VER_COMUNICADOS, // ve y descarga documentos (no sube)
       PERMISOS.VER_TURNOS,
       PERMISOS.MARCAR_ASISTENCIA_TURNO,
     ],

@@ -91,7 +91,7 @@ export default function App() {
         element={
           <LayoutPrivado>
             <RutaProtegida
-              permiso={PERMISOS.GESTIONAR_COMUNICADOS}
+              permiso={PERMISOS.VER_COMUNICADOS}
               mensaje="Tu rango no gestiona comunicados."
             >
               <Comunicados />

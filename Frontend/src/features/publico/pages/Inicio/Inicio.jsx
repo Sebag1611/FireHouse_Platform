@@ -6,6 +6,7 @@ import {
   noticias,
 } from '../../../../data/contenidoPublico'
 import EstadoBadge from '../../../../components/ui/EstadoBadge'
+import EmergenciasResumen from '../../../../components/ui/EmergenciasResumen'
 import {
   IconoFlecha,
   IconoReloj,
@@ -140,6 +141,21 @@ export default function Inicio() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ---------- ESTADÍSTICAS DE EMERGENCIAS DEL AÑO ---------- */}
+      <section className="seccion">
+        <div className="contenedor">
+          <span className="eyebrow">
+            <IconoFuego width={15} /> Respuesta a la comunidad
+          </span>
+          <h2 className="titulo-seccion">Emergencias atendidas en Calama</h2>
+          <p className="subtitulo-seccion" style={{ marginBottom: 40 }}>
+            Nuestro compromiso con la ciudad, reflejado en cada llamado atendido
+            durante el año.
+          </p>
+          <EmergenciasResumen variante="publico" />
         </div>
       </section>
 

@@ -36,7 +36,7 @@ const MENU = [
   { to: ROUTES.PANEL_PERSONAL, texto: 'Personal', icono: IconoGrupo, permiso: PERMISOS.VER_BOMBEROS },
   { to: ROUTES.PANEL_UNIDADES, texto: 'Material Mayor', icono: IconoCamion, permiso: PERMISOS.CAMBIAR_ESTADO_UNIDAD },
   { to: ROUTES.PANEL_TURNOS, texto: 'Turnos', icono: IconoCalendario, permiso: PERMISOS.VER_TURNOS },
-  { to: ROUTES.PANEL_COMUNICADOS, texto: 'Comunicados', icono: IconoDocumentos, permiso: PERMISOS.GESTIONAR_COMUNICADOS },
+  { to: ROUTES.PANEL_COMUNICADOS, texto: 'Comunicados', icono: IconoDocumentos, permiso: PERMISOS.VER_COMUNICADOS },
   { to: ROUTES.PANEL_POSTULACIONES, texto: 'Postulaciones', icono: IconoBandeja, permiso: PERMISOS.VER_POSTULACIONES },
 ]
 

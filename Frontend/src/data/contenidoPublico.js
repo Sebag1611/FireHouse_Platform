@@ -137,6 +137,22 @@ export const ESTADOS_OPERATIVOS = {
   taller: { etiqueta: 'Fuera de Servicio', color: 'Red' },
 }
 
+// Total de emergencias atendidas en el año, con desglose por tipo.
+// Se muestra en NÚMEROS (no porcentajes), tanto en la cara pública
+// como en el panel interno. La suma del desglose da el total.
+export const emergenciasAnuales = {
+  anio: 2026,
+  corteAl: '30 de junio de 2026',
+  total: 233,
+  desglose: [
+    { tipo: 'Incendios', cantidad: 98, icono: 'fuego' },
+    { tipo: 'Rescate', cantidad: 64, icono: 'rescate' },
+    { tipo: 'HazMat', cantidad: 39, icono: 'hazmat' },
+    { tipo: 'Abastecimiento', cantidad: 32, icono: 'agua' },
+  ],
+}
+
+
 // HU-08 — Estado de turno actual (banner del home)
 export const turnoActual = {
   tipo: 'Guardia Nocturna',

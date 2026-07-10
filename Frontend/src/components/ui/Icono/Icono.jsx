@@ -211,3 +211,26 @@ export const IconoLuna = (p) => (
     <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
   </svg>
 )
+
+/* ---------- Iconos de tipos de emergencia ---------- */
+
+export const IconoRescate = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 2v6M12 8l3.5 3.5M12 8 8.5 11.5" />
+    <circle cx="12" cy="16" r="6" />
+    <path d="M12 13v6M9 16h6" />
+  </svg>
+)
+
+export const IconoHazmat = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 3 2 20h20L12 3Z" />
+    <path d="M12 9v5M12 17v.5" />
+  </svg>
+)
+
+export const IconoAgua = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 2s7 7.6 7 12a7 7 0 0 1-14 0c0-4.4 7-12 7-12Z" />
+  </svg>
+)

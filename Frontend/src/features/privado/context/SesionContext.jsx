@@ -12,8 +12,14 @@ import {
 const SesionContext = createContext(null)
 
 export function SesionProvider({ children }) {
-  // Por defecto entra como Capitán (administrador) para la demo.
-  const [rangoId, setRangoId] = useState('capitan')
+  // Al iniciar, toma el rango con el que se autenticó el usuario
+  // (guardado por el login en localStorage). Si no hay ninguno
+  // —por ejemplo, si se entra directo al panel en la demo—, usa
+  // Capitán por defecto.
+  const [rangoId, setRangoId] = useState(() => {
+    if (typeof window === 'undefined') return 'capitan'
+    return localStorage.getItem('firehouse-rango') || 'capitan'
+  })
 
   const rango = getRango(rangoId)
   const nivel = getNivel(rangoId)
