@@ -67,6 +67,7 @@
 .panel__link--activo {
   background: var(--verde);
   color: #fff;
+  box-shadow: inset 3px 0 0 var(--rojo-claro);
 }
 
 .panel__link--activo svg {
@@ -136,37 +137,25 @@
   font-weight: 500;
 }
 
-.panel__rol-demo {
+.panel__home {
   margin-left: auto;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-}
-
-.panel__rol-demo label {
+  gap: 8px;
   font-family: var(--display);
-  font-size: 0.84rem;
-  letter-spacing: 0.04em;
-  color: var(--gris-tenue);
-  text-transform: uppercase;
-}
-
-.panel__rol-demo select {
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  color: var(--humo);
-  font-family: var(--body);
-  font-size: 0.92rem;
-  padding: 9px 14px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 9px 16px;
   border-radius: var(--radio-sm);
-  cursor: pointer;
-  transition: border-color var(--transicion);
+  border: 1px solid var(--borde);
+  color: var(--gris);
+  transition: var(--transicion);
 }
 
-.panel__rol-demo select:hover,
-.panel__rol-demo select:focus {
+.panel__home:hover {
   border-color: var(--verde-claro);
-  outline: none;
+  color: var(--verde-claro);
+  transform: translateY(-1px);
 }
 
 .panel__contenido {
@@ -214,7 +203,8 @@
     background: rgba(0, 0, 0, 0.6);
   }
 
-  .panel__rol-demo label {
+  /* En móvil, el botón Home muestra solo el icono. */
+  .panel__home span {
     display: none;
   }
 }

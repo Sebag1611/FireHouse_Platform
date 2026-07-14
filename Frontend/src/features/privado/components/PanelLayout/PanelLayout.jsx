@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useSesion } from '../../context'
-import { RANGOS, PERMISOS } from '../../../../data/roles'
+import { PERMISOS } from '../../../../data/roles'
 import { ROUTES } from '../../../../app/routes'
 import Logo from '../../../../components/ui/Logo'
 import ToggleTema from '../../../../components/ui/ToggleTema'
 import {
   IconoPanel, IconoGrupo, IconoCamion, IconoCalendario,
-  IconoDocumentos, IconoBandeja, IconoSalir, IconoMenu, IconoCerrar,
+  IconoDocumentos, IconoBandeja, IconoSalir, IconoMenu, IconoCerrar, IconoCasa,
 } from '../../../../components/ui/Icono'
 import './PanelLayout.css'
 
@@ -34,14 +34,14 @@ import './PanelLayout.css'
 const MENU = [
   { to: ROUTES.PANEL, texto: 'Dashboard', icono: IconoPanel, permiso: PERMISOS.VER_PANEL, exacto: true },
   { to: ROUTES.PANEL_PERSONAL, texto: 'Personal', icono: IconoGrupo, permiso: PERMISOS.VER_BOMBEROS },
-  { to: ROUTES.PANEL_UNIDADES, texto: 'Material Mayor', icono: IconoCamion, permiso: PERMISOS.CAMBIAR_ESTADO_UNIDAD },
+  { to: ROUTES.PANEL_UNIDADES, texto: 'Material Mayor', icono: IconoCamion, permiso: PERMISOS.VER_UNIDADES },
   { to: ROUTES.PANEL_TURNOS, texto: 'Turnos', icono: IconoCalendario, permiso: PERMISOS.VER_TURNOS },
   { to: ROUTES.PANEL_COMUNICADOS, texto: 'Comunicados', icono: IconoDocumentos, permiso: PERMISOS.VER_COMUNICADOS },
   { to: ROUTES.PANEL_POSTULACIONES, texto: 'Postulaciones', icono: IconoBandeja, permiso: PERMISOS.VER_POSTULACIONES },
 ]
 
 export default function PanelLayout({ children }) {
-  const { rangoId, setRangoId, rango, nivel, usuarioConNumero, puede } = useSesion()
+  const { rango, nivel, usuarioConNumero, puede, cerrarSesion } = useSesion()
   // Estado del menú lateral en móvil (abierto/cerrado).
   const [menuAbierto, setMenuAbierto] = useState(false)
   const navigate = useNavigate()
@@ -86,8 +86,14 @@ export default function PanelLayout({ children }) {
           })}
         </nav>
 
-        {/* Salir del panel regresa a la cara pública. */}
-        <button className="panel__salir" onClick={() => navigate(ROUTES.HOME)}>
+        {/* Cierra la sesión y regresa a la cara pública. */}
+        <button
+          className="panel__salir"
+          onClick={() => {
+            cerrarSesion()
+            navigate(ROUTES.HOME)
+          }}
+        >
           <IconoSalir width={19} />
           Salir del panel
         </button>
@@ -116,23 +122,15 @@ export default function PanelLayout({ children }) {
             </span>
           </div>
 
-          {/* Selector de rol: herramienta de demostración que
-              permite ver el panel "como" cualquier rango y mostrar
-              en vivo cómo cambian los permisos y el menú. */}
-          <div className="panel__rol-demo">
-            <label htmlFor="rol-demo">Ver como:</label>
-            <select
-              id="rol-demo"
-              value={rangoId}
-              onChange={(e) => setRangoId(e.target.value)}
-            >
-              {RANGOS.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.numero ? `${r.numero} · ${r.nombre}` : r.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Botón Home: regresa al Dashboard del panel. */}
+          <button
+            className="panel__home"
+            onClick={() => navigate(ROUTES.PANEL)}
+            title="Ir al Dashboard"
+          >
+            <IconoCasa width={18} />
+            <span>Home</span>
+          </button>
 
           <ToggleTema />
         </header>

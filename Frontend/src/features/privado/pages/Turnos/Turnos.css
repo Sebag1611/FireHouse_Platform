@@ -342,3 +342,326 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Botón de acciones (crear guardia) ---------- */
+.turnos-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+/* ---------- Tareas de la guardia (en la planilla) ---------- */
+.planilla__tareas {
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.planilla__tareas-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rojo-claro);
+  margin-bottom: 10px;
+}
+
+.planilla__tareas ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planilla__tareas li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  color: var(--gris);
+}
+
+.planilla__tareas li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--verde-claro);
+}
+
+/* ---------- Formulario crear guardia ---------- */
+.form-guardia {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sombra);
+  animation: subir 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.form-guardia__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.form-guardia__head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+}
+
+.form-guardia__cerrar {
+  color: var(--gris);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-sm);
+  transition: var(--transicion);
+}
+
+.form-guardia__cerrar:hover {
+  background: var(--carbon-2);
+  color: var(--rojo-claro);
+}
+
+.form-guardia__body {
+  padding: 22px 24px;
+  overflow-y: auto;
+}
+
+.form-guardia__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.form-guardia__seccion {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--superficie-2);
+}
+
+.form-guardia__seccion-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.form-guardia__seccion-head h3 {
+  font-size: 1.02rem;
+}
+
+/* Fila de bloque */
+.guardia-bloque {
+  display: grid;
+  grid-template-columns: 1.4fr 1.4fr 0.7fr auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.guardia-bloque input {
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  border-radius: var(--radio-sm);
+}
+
+.guardia-bloque input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.guardia-bloque__quitar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris-tenue);
+  transition: var(--transicion);
+}
+
+.guardia-bloque__quitar:hover {
+  border-color: var(--rojo);
+  color: var(--rojo-claro);
+}
+
+/* Tareas */
+.guardia-tareas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.guardia-tareas li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+  color: var(--gris-tenue);
+}
+
+.guardia-tareas li.guardia-tarea--on {
+  color: var(--humo);
+}
+
+.guardia-tarea__check {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--borde);
+  color: #fff;
+  transition: var(--transicion);
+}
+
+.guardia-tarea--on .guardia-tarea__check {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+
+.guardia-tarea__check i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.guardia-tarea-nueva {
+  display: flex;
+  gap: 10px;
+}
+
+.guardia-tarea-nueva input {
+  flex: 1;
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  border-radius: var(--radio-sm);
+}
+
+.guardia-tarea-nueva input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.form-guardia__error {
+  color: var(--rojo-claro);
+  font-size: 0.9rem;
+  margin-top: 14px;
+}
+
+.form-guardia__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--borde);
+}
+
+@media (max-width: 560px) {
+  .form-guardia__grid {
+    grid-template-columns: 1fr;
+  }
+  .guardia-bloque {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  .guardia-bloque__dia {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Acciones del turno (descargar/eliminar) ---------- */
+.planilla__acciones {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* Botón mini variante peligro (eliminar) */
+.btn-mini--peligro {
+  border-color: color-mix(in srgb, var(--rojo) 40%, transparent);
+  color: var(--rojo-claro);
+}
+
+.btn-mini--peligro:hover {
+  border-color: var(--rojo);
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  color: var(--rojo-claro);
+}
+
+/* Botón quitar tarea */
+.planilla__tareas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.planilla__tarea-quitar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--gris-tenue);
+  flex-shrink: 0;
+  transition: var(--transicion);
+}
+
+.planilla__tarea-quitar:hover {
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  color: var(--rojo-claro);
+}
+
+/* Acciones del bloque (editar + eliminar) */
+.bloque__acciones {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bloque__eliminar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris-tenue);
+  transition: var(--transicion);
+}
+
+.bloque__eliminar:hover {
+  border-color: var(--rojo);
+  color: var(--rojo-claro);
+}

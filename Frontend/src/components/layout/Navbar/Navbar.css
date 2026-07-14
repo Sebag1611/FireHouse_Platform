@@ -26,6 +26,23 @@
   gap: 28px;
 }
 
+.nav__home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.96rem;
+  letter-spacing: 0.04em;
+  color: var(--gris);
+  padding: 4px 0;
+  transition: color var(--transicion);
+}
+
+.nav__home:hover {
+  color: var(--verde-claro);
+}
+
 .nav__link {
   font-family: var(--display);
   font-weight: 500;
@@ -52,12 +69,18 @@
   bottom: -4px;
   width: 100%;
   height: 2.5px;
-  background: var(--verde);
+  background: var(--rojo);
 }
 
 .nav__cta {
   padding: 10px 20px;
   font-size: 0.86rem;
+  background: var(--rojo);
+  box-shadow: 0 12px 40px rgba(193, 39, 45, 0.3);
+}
+
+.nav__cta:hover {
+  background: var(--rojo-osc);
 }
 
 .nav__acceso {

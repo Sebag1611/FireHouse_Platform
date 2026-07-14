@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   padding: 26px;
-  background: linear-gradient(150deg, var(--verde), var(--verde-osc));
+  background: linear-gradient(150deg, var(--verde), var(--verde-osc) 55%, var(--rojo-osc));
   border-radius: var(--radio);
   color: #fff;
   text-align: center;
@@ -68,6 +68,18 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--verde) 14%, transparent);
   color: var(--verde-claro);
+}
+
+/* Variantes de color del icono (identidad dual verde/rojo). */
+.emergencias-tipo--rojo .emergencias-tipo__icono {
+  background: color-mix(in srgb, var(--rojo) 14%, transparent);
+  color: var(--rojo-claro);
+}
+.emergencias-tipo--rojo:hover {
+  border-color: var(--rojo);
+}
+.emergencias-tipo--verde:hover {
+  border-color: var(--verde-claro);
 }
 
 .emergencias-tipo__cantidad {

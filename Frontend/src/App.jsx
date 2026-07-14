@@ -65,8 +65,8 @@ export default function App() {
         element={
           <LayoutPrivado>
             <RutaProtegida
-              permiso={PERMISOS.CAMBIAR_ESTADO_UNIDAD}
-              mensaje="Solo el personal operativo puede acceder a la pizarra de unidades."
+              permiso={PERMISOS.VER_UNIDADES}
+              mensaje="Tu rango no tiene acceso a la información de unidades."
             >
               <UnidadesOperativas />
             </RutaProtegida>

@@ -8,6 +8,9 @@
   font-size: 1.9rem;
   text-transform: uppercase;
   margin-bottom: 6px;
+  display: inline-block;
+  border-bottom: 3px solid var(--rojo);
+  padding-bottom: 4px;
 }
 
 .vista-head p {
@@ -44,10 +47,10 @@
   margin-top: 6px;
 }
 
-.stat-card--verde { border-left: 3px solid var(--disponible); }
+.stat-card--verde { border-left: 3px solid var(--verde-claro); }
 .stat-card--ambar { border-left: 3px solid var(--servicio); }
-.stat-card--rojo { border-left: 3px solid var(--emergencia); }
-.stat-card--claro { border-left: 3px solid var(--verde-claro); }
+.stat-card--rojo { border-left: 3px solid var(--rojo); }
+.stat-card--claro { border-left: 3px solid var(--disponible); }
 
 /* Panel/caja genérica */
 .panel-box {
@@ -65,6 +68,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--rojo);
 }
 
 /* Tabla del panel */

@@ -39,7 +39,7 @@
   font-size: 0.82rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--verde);
+  color: var(--rojo);
   margin-bottom: 16px;
 }
 
@@ -47,7 +47,7 @@
   content: '';
   width: 28px;
   height: 3px;
-  background: var(--verde);
+  background: var(--rojo);
 }
 
 /* Título grande de sección. clamp() lo hace responsivo:
@@ -106,16 +106,29 @@
   color: var(--verde-claro);
 }
 
+/* Botón de acento rojo: para acciones destacadas (postular, alertas,
+   llamados a la acción de emergencia). Da identidad bomberil. */
+.btn-rojo {
+  background: var(--rojo);
+  color: #fff;
+  box-shadow: 0 12px 40px rgba(193, 39, 45, 0.28);
+}
+
+.btn-rojo:hover {
+  background: var(--rojo-osc);
+  transform: translateY(-2px);
+}
+
 /* --- Firma visual: cinta diagonal tipo "peligro" --- */
 .cinta-peligro {
   height: 6px;
   width: 100%;
   background: repeating-linear-gradient(
     -45deg,
-    var(--verde) 0 18px,
-    var(--carbon) 18px 36px
+    var(--rojo) 0 18px,
+    var(--verde) 18px 36px
   );
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 /* Ajuste responsivo del espaciado de sección en móvil. */

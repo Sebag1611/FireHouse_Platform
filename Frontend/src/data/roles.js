@@ -24,25 +24,28 @@
 // Lista de permisos posibles del sistema (llaves internas)
 export const PERMISOS = {
   VER_PANEL: 'ver_panel',
-  VER_BOMBEROS: 'ver_bomberos',
+  VER_BOMBEROS: 'ver_bomberos',       // ver la ficha/info del personal
   EDITAR_BOMBEROS: 'editar_bomberos',
+  CREAR_PERSONAL: 'crear_personal',   // dar de alta bombero/aspirante
   CAMBIAR_RANGOS: 'cambiar_rangos',
-  MOVER_MATERIAL: 'mover_material',
-  CAMBIAR_ESTADO_UNIDAD: 'cambiar_estado_unidad',
+  VER_UNIDADES: 'ver_unidades',       // ver ubicación y estado (TODOS)
+  MOVER_MATERIAL: 'mover_material',   // mover material mayor (solo mando)
+  CAMBIAR_ESTADO_UNIDAD: 'cambiar_estado_unidad', // cambiar estado (solo mando)
   VER_COMUNICADOS: 'ver_comunicados',        // ver y DESCARGAR documentos
   GESTIONAR_COMUNICADOS: 'gestionar_comunicados', // además SUBIR documentos
   VER_TURNOS: 'ver_turnos',              // ver la planilla de turnos
-  MARCAR_ASISTENCIA_TURNO: 'marcar_turno', // inscribirse en un bloque
-  // Configurar turnos: cambiar encargado, cupos y horarios. Base
-  // para Directora y Capitán; el teniente ENCARGADO de la semana
-  // también puede, aunque su nivel operativo no incluya este
-  // permiso (se resuelve aparte, según quién sea el encargado).
+  MARCAR_ASISTENCIA_TURNO: 'marcar_turno', // inscribirse en un bloque (TODOS)
+  // Configurar turnos: crear guardia con plantilla, cambiar encargado,
+  // cupos y horarios. Base para Directora y Capitán; el teniente
+  // ENCARGADO de la semana también puede (se resuelve según quién sea
+  // el encargado de la planilla).
   CONFIGURAR_TURNOS: 'configurar_turnos',
   VER_POSTULACIONES: 'ver_postulaciones',
 }
 
 // Niveles de permiso (agrupan varios rangos)
 export const NIVELES = {
+  // Directora y Capitán: permiso máximo.
   ADMIN: {
     id: 'admin',
     etiqueta: 'Administrador',
@@ -51,17 +54,21 @@ export const NIVELES = {
       PERMISOS.VER_PANEL,
       PERMISOS.VER_BOMBEROS,
       PERMISOS.EDITAR_BOMBEROS,
+      PERMISOS.CREAR_PERSONAL, // crear bombero / aspirante
       PERMISOS.CAMBIAR_RANGOS,
+      PERMISOS.VER_UNIDADES,
       PERMISOS.MOVER_MATERIAL,
       PERMISOS.CAMBIAR_ESTADO_UNIDAD,
       PERMISOS.VER_COMUNICADOS,
       PERMISOS.GESTIONAR_COMUNICADOS,
-      PERMISOS.VER_TURNOS, // ven turnos, pero NO marcan asistencia
-      PERMISOS.CONFIGURAR_TURNOS, // Directora y Capitán configuran turnos
+      PERMISOS.VER_TURNOS,
+      PERMISOS.MARCAR_ASISTENCIA_TURNO, // todos toman turnos
+      PERMISOS.CONFIGURAR_TURNOS,
       PERMISOS.VER_POSTULACIONES,
     ],
   },
-  // Tenientes: operativos que ven turnos pero no marcan asistencia.
+  // Tenientes: mando operativo. Mueven y cambian estados de unidades,
+  // y también toman turnos (como todos).
   OPERATIVO_MANDO: {
     id: 'operativo_mando',
     etiqueta: 'Oficial operativo',
@@ -69,22 +76,7 @@ export const NIVELES = {
     permisos: [
       PERMISOS.VER_PANEL,
       PERMISOS.VER_BOMBEROS,
-      PERMISOS.MOVER_MATERIAL,
-      PERMISOS.CAMBIAR_ESTADO_UNIDAD,
-      PERMISOS.VER_COMUNICADOS,
-      PERMISOS.GESTIONAR_COMUNICADOS,
-      PERMISOS.VER_TURNOS, // ven, no se inscriben
-      PERMISOS.VER_POSTULACIONES,
-    ],
-  },
-  // Ayudantes: operativos que SÍ marcan asistencia en turnos.
-  OPERATIVO: {
-    id: 'operativo',
-    etiqueta: 'Oficial operativo',
-    color: 'var(--servicio)',
-    permisos: [
-      PERMISOS.VER_PANEL,
-      PERMISOS.VER_BOMBEROS,
+      PERMISOS.VER_UNIDADES,
       PERMISOS.MOVER_MATERIAL,
       PERMISOS.CAMBIAR_ESTADO_UNIDAD,
       PERMISOS.VER_COMUNICADOS,
@@ -94,6 +86,24 @@ export const NIVELES = {
       PERMISOS.VER_POSTULACIONES,
     ],
   },
+  // Ayudantes: operativos. VEN unidades pero ya NO las mueven ni
+  // cambian su estado (eso quedó solo para tenientes y mando).
+  OPERATIVO: {
+    id: 'operativo',
+    etiqueta: 'Oficial operativo',
+    color: 'var(--servicio)',
+    permisos: [
+      PERMISOS.VER_PANEL,
+      PERMISOS.VER_BOMBEROS,
+      PERMISOS.VER_UNIDADES,
+      PERMISOS.VER_COMUNICADOS,
+      PERMISOS.GESTIONAR_COMUNICADOS,
+      PERMISOS.VER_TURNOS,
+      PERMISOS.MARCAR_ASISTENCIA_TURNO,
+      PERMISOS.VER_POSTULACIONES,
+    ],
+  },
+  // Secretaria: administrativa. Edita bomberos, gestiona documentos.
   ADMINISTRATIVO: {
     id: 'administrativo',
     etiqueta: 'Oficial administrativo',
@@ -102,6 +112,7 @@ export const NIVELES = {
       PERMISOS.VER_PANEL,
       PERMISOS.VER_BOMBEROS,
       PERMISOS.EDITAR_BOMBEROS, // la secretaria SÍ edita
+      PERMISOS.VER_UNIDADES,
       PERMISOS.VER_COMUNICADOS,
       PERMISOS.GESTIONAR_COMUNICADOS,
       PERMISOS.VER_TURNOS,
@@ -109,6 +120,8 @@ export const NIVELES = {
       PERMISOS.VER_POSTULACIONES,
     ],
   },
+  // Tesorera: oficial de lectura. Ve info de bomberos y unidades,
+  // y toma turnos, pero no gestiona nada.
   LECTURA: {
     id: 'lectura',
     etiqueta: 'Oficial (solo lectura)',
@@ -116,19 +129,23 @@ export const NIVELES = {
     permisos: [
       PERMISOS.VER_PANEL,
       PERMISOS.VER_BOMBEROS,
+      PERMISOS.VER_UNIDADES,
+      PERMISOS.VER_COMUNICADOS,
       PERMISOS.VER_TURNOS,
-      PERMISOS.MARCAR_ASISTENCIA_TURNO, // la tesorera marca asistencia
+      PERMISOS.MARCAR_ASISTENCIA_TURNO,
     ],
   },
-  // Bombero base: voluntario sin cargo. Ve el panel, ve turnos y
-  // marca asistencia (es justamente quien más lo necesita).
+  // Bombero base: voluntario sin cargo. NO ve la info del personal
+  // (eso quedó solo para oficiales y Directora), pero ve unidades,
+  // documentos y toma turnos.
   BOMBERO: {
     id: 'bombero',
     etiqueta: 'Bombero',
     color: 'var(--verde-claro)',
     permisos: [
       PERMISOS.VER_PANEL,
-      PERMISOS.VER_COMUNICADOS, // ve y descarga documentos (no sube)
+      PERMISOS.VER_UNIDADES,     // ve ubicación y estado (no cambia)
+      PERMISOS.VER_COMUNICADOS,  // ve y descarga documentos
       PERMISOS.VER_TURNOS,
       PERMISOS.MARCAR_ASISTENCIA_TURNO,
     ],
@@ -149,6 +166,9 @@ export const RANGOS = [
   { id: 'tesorero', numero: 308, nombre: 'Tesorera', persona: 'Allison Maulen', nivel: 'LECTURA', orden: 9 },
   // Rango base para todo voluntario sin cargo asignado.
   { id: 'bombero', numero: null, nombre: 'Bombero', persona: 'Voluntario de base', nivel: 'BOMBERO', orden: 10 },
+  // Aspirante: voluntario en formación, aún no es bombero de pleno
+  // derecho. Mismos permisos de visualización que el bombero base.
+  { id: 'aspirante', numero: null, nombre: 'Aspirante', persona: 'Voluntario en formación', nivel: 'BOMBERO', orden: 11 },
 ]
 
 // --- Helpers ---

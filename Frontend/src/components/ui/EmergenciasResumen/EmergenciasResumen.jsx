@@ -38,10 +38,13 @@ export default function EmergenciasResumen({ variante = 'publico' }) {
 
       {/* Desglose por tipo, en números. */}
       <div className="emergencias-resumen__grid">
-        {desglose.map((d) => {
+        {desglose.map((d, i) => {
           const Icono = ICONOS[d.icono] ?? IconoFuego
+          // Alterna el color del icono entre rojo y verde para
+          // reforzar la identidad dual de la compañía.
+          const claseColor = i % 2 === 0 ? 'emergencias-tipo--rojo' : 'emergencias-tipo--verde'
           return (
-            <div className="emergencias-tipo" key={d.tipo}>
+            <div className={`emergencias-tipo ${claseColor}`} key={d.tipo}>
               <span className="emergencias-tipo__icono">
                 <Icono width={24} />
               </span>

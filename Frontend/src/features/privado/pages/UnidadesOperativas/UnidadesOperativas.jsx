@@ -78,7 +78,8 @@ export default function UnidadesOperativas() {
                 </div>
               ) : (
                 <p className="unidad-panel-card__solo-lectura">
-                  Solo lectura para tu rango.
+                  Puedes ver la ubicación y el estado. Solo tenientes, capitán y
+                  directora pueden modificarlos.
                 </p>
               )}
             </div>

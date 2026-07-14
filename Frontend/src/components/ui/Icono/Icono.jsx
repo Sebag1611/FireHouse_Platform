@@ -234,3 +234,27 @@ export const IconoAgua = (p) => (
     <path d="M12 2s7 7.6 7 12a7 7 0 0 1-14 0c0-4.4 7-12 7-12Z" />
   </svg>
 )
+
+export const IconoCasa = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 10.5 12 3l9 7.5" />
+    <path d="M5 9.5V21h14V9.5" />
+    <path d="M9 21v-6h6v6" />
+  </svg>
+)
+
+/* ---------- Iconos de acción ---------- */
+
+export const IconoBasura = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6M14 11v6" />
+  </svg>
+)
+
+export const IconoDescargaPDF = (p) => (
+  <svg {...base} {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M7 10l5 5 5-5M12 15V3" />
+  </svg>
+)

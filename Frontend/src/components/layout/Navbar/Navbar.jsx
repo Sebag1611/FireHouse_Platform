@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Logo from '../../ui/Logo'
 import ToggleTema from '../../ui/ToggleTema'
-import { IconoMenu, IconoCerrar } from '../../ui/Icono'
+import { IconoMenu, IconoCerrar, IconoCasa } from '../../ui/Icono'
 import { ROUTES, NAV_PUBLICO } from '../../../app/routes'
 import './Navbar.css'
 
@@ -21,6 +21,15 @@ export default function Navbar() {
   // Estado de scroll: true cuando la página ya se desplazó un poco.
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+
+  // Botón Home: va al inicio del sitio público y sube al tope de la
+  // página. Si ya estamos en Inicio, igual hace scroll suave arriba.
+  const irAHome = () => {
+    navigate(ROUTES.HOME)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setAbierto(false)
+  }
 
   // Al cambiar de ruta, cerramos el menú móvil (si estaba abierto).
   useEffect(() => {
@@ -43,9 +52,13 @@ export default function Navbar() {
         </Link>
 
         <nav className={`nav__menu ${abierto ? 'nav__menu--abierto' : ''}`}>
-          {/* Los enlaces se generan desde la lista central NAV_PUBLICO,
-              no escritos a mano, para mantener orden y consistencia. */}
-          {NAV_PUBLICO.map((e) => (
+          {/* Botón Home: sube al inicio de la página. */}
+          <button className="nav__home" onClick={irAHome}>
+            <IconoCasa width={16} /> Inicio
+          </button>
+          {/* El resto de enlaces se generan desde NAV_PUBLICO (se omite
+              "Inicio" porque ya está el botón Home). */}
+          {NAV_PUBLICO.filter((e) => e.to !== ROUTES.HOME).map((e) => (
             <NavLink
               key={e.to}
               to={e.to}

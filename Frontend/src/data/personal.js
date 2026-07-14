@@ -28,120 +28,104 @@ export const bomberos = [
 ]
 
 /* ------------------------------------------------------------
-   TURNOS · Planillas de asistencia semanal
+   TURNOS · Planilla semanal con rotación automática
    ------------------------------------------------------------
-   El cambio de turno rota cada semana. Cada planilla cubre una
-   semana, tiene un TENIENTE ENCARGADO y se divide en BLOQUES
-   (día + franja horaria), cada uno con un LÍMITE DE CUPOS.
+   Hay UNA sola planilla activa por semana. Cada semana el sistema
+   alterna automáticamente el TIPO (diurno ↔ nocturno) y el
+   TENIENTE a cargo, siguiendo esta regla acordada:
+     - Semana diurna   -> encargado: Teniente 1º
+     - Semana nocturna -> encargado: Teniente 2º
+   La semana de referencia arranca en DIURNO.
 
-   Reglas:
-   - Los bomberos se anotan; los primeros en llenar el cupo quedan.
-   - Antes de cerrarse, se ve "anotados / cupos" (sin nombres).
-   - Cuando los anotados llegan al cupo, el bloque se CIERRA solo
-     y recién ahí se muestran los NOMBRES de los seleccionados.
-   - El encargado (o Directora/Capitán) puede editar cupos y
-     horarios, y designar al siguiente encargado.
+   Cada planilla se divide en BLOQUES (día + franja horaria) con un
+   LÍMITE DE CUPOS. Los bomberos se anotan; los primeros en llenar
+   el cupo quedan. Antes de cerrarse se ve "anotados / cupos" (sin
+   nombres); al llenarse, el bloque se cierra y se revelan los
+   seleccionados.
 
-   Cada bloque guarda 'anotados' como lista de nombres (no solo un
-   número), para poder revelarlos al cerrarse.
+   'anotados' es una lista de nombres (no un número), para poder
+   revelarlos al cerrarse.
    ------------------------------------------------------------ */
 
 // Franjas horarias del turno diurno (bloques de 4 horas).
 const FRANJAS_DIURNO = ['09:30 a 13:30', '13:30 a 17:30', '17:30 a 21:30']
+// Días que cubre una guardia semanal.
+const DIAS_SEMANA = ['Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
-/**
- * Construye los bloques de una planilla diurna.
- * @param {string[]} dias  - Días de la semana de la planilla.
- * @param {number[]} cuposPorBloque   - Límite de cupos de cada bloque.
- * @param {string[][]} anotadosPorBloque - Nombres ya anotados en cada bloque.
- */
-function bloquesDiurno(dias, cuposPorBloque, anotadosPorBloque) {
+// Calcula el número de semana del año (ISO simplificado). Sirve
+// para alternar el turno automáticamente semana a semana.
+function numeroSemana(fecha = new Date()) {
+  const inicioAnio = new Date(fecha.getFullYear(), 0, 1)
+  const dias = Math.floor((fecha - inicioAnio) / 86400000)
+  return Math.ceil((dias + inicioAnio.getDay() + 1) / 7)
+}
+
+// Genera los bloques de una guardia diurna (3 franjas por día).
+function generarBloquesDiurno() {
   const bloques = []
-  let i = 0
-  for (const dia of dias) {
+  for (const dia of DIAS_SEMANA) {
     for (const franja of FRANJAS_DIURNO) {
       bloques.push({
-        id: `${dia}-${franja}`.replace(/[\s:]/g, ''),
+        id: `d-${dia}-${franja}`.replace(/[\s:]/g, ''),
         dia,
         horario: franja,
-        cupos: cuposPorBloque[i] ?? 4,
-        anotados: anotadosPorBloque[i] ?? [],
+        cupos: 4,
+        anotados: [],
         inscritoYo: false,
       })
-      i++
     }
   }
   return bloques
 }
 
-export const planillasTurno = [
-  {
-    id: 'semana-actual',
-    titulo: 'Turno Diurno',
-    subtitulo: 'Semana del 24 al 30 de junio de 2026',
-    plazo: 'Plazo: lunes 22 de junio a las 20:00 hrs.',
-    tipo: 'diurno',
-    encargado: 'teniente2', // 302 · Omar Cruz
-    bloques: bloquesDiurno(
-      ['Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-      // Cupos por bloque:
-      [4, 4, 4, 4, 4, 6, 4, 4, 4, 3, 2, 2],
-      // Nombres ya anotados por bloque:
-      [
-        [], [], [],
-        ['Juan Pacheco', 'Diego Fuentes'],
-        ['Camila Vega', 'Lissete Perez de Arce'],
-        ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce'],
-        ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza'],
-        ['Diego Fuentes', 'Lissete Perez de Arce', 'Camila Vega', 'Allison Maulen'],
-        ['Juan Pacheco', 'Camila Vega', 'Diego Fuentes', 'Natalia Anza'],
-        ['Diego Fuentes', 'Camila Vega'],
-        ['Allison Maulen'],
-        ['Juan Pacheco'],
-      ]
-    ),
-  },
-  {
-    id: 'continuacion',
-    titulo: 'Continuación de Turnos',
-    subtitulo: 'Semana siguiente',
-    plazo: 'Completa los bloques que puedas cubrir.',
-    tipo: 'diurno',
-    encargado: 'teniente1', // 301 · Jeferson Araya
-    bloques: bloquesDiurno(
-      ['Domingo', 'Lunes', 'Martes'],
-      [4, 3, 3, 3, 3, 4, 3, 2, 2],
-      [
-        ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza'], // Dom mañana lleno
-        [],
-        [],
-        ['Camila Vega', 'Diego Fuentes', 'Juan Pacheco'], // lleno
-        ['Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce'], // lleno
-        ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza'], // lleno
-        ['Juan Pacheco', 'Camila Vega', 'Diego Fuentes'],
-        ['Allison Maulen'],
-        ['Diego Fuentes', 'Lissete Perez de Arce'],
-      ]
-    ),
-  },
-  {
-    id: 'nocturna',
-    titulo: 'Guardia Nocturna',
-    subtitulo: 'Del miércoles 1 al martes 7 de julio',
-    plazo: 'Franja única: 21:30 a 09:30 hrs.',
-    tipo: 'nocturno',
-    encargado: 'teniente3', // 303 · Pablo Valdes
-    bloques: [
-      { id: 'noc-mie', dia: 'Miércoles 1', horario: '21:30 a 09:30', cupos: 7, anotados: ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce', 'Sebastián Guerra'], inscritoYo: true },
-      { id: 'noc-jue', dia: 'Jueves 2', horario: '21:30 a 09:30', cupos: 7, anotados: ['Camila Vega', 'Diego Fuentes', 'Juan Pacheco', 'Natalia Anza', 'Allison Maulen'], inscritoYo: false },
-      { id: 'noc-vie', dia: 'Viernes 3', horario: '21:30 a 09:30', cupos: 7, anotados: ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce', 'Diego Fuentes'], inscritoYo: false },
-      { id: 'noc-sab', dia: 'Sábado 4', horario: '21:30 a 09:30', cupos: 7, anotados: ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce', 'Camila Vega'], inscritoYo: false },
-      { id: 'noc-dom', dia: 'Domingo 5', horario: '21:30 a 09:30', cupos: 8, anotados: ['Juan Pacheco', 'Diego Fuentes', 'Camila Vega', 'Natalia Anza', 'Allison Maulen', 'Lissete Perez de Arce'], inscritoYo: true },
-      { id: 'noc-lun', dia: 'Lunes 6', horario: '21:30 a 09:30', cupos: 6, anotados: ['Diego Fuentes', 'Camila Vega', 'Juan Pacheco', 'Natalia Anza'], inscritoYo: false },
-      { id: 'noc-mar', dia: 'Martes 7', horario: '21:30 a 09:30', cupos: 6, anotados: ['Juan Pacheco', 'Camila Vega', 'Diego Fuentes', 'Allison Maulen'], inscritoYo: false },
+// Genera los bloques de una guardia nocturna (1 franja por día).
+function generarBloquesNocturno() {
+  return DIAS_SEMANA.map((dia) => ({
+    id: `n-${dia}`.replace(/[\s:]/g, ''),
+    dia,
+    horario: '21:30 a 09:30',
+    cupos: 6,
+    anotados: [],
+    inscritoYo: false,
+  }))
+}
+
+// Construye la planilla de la semana según su número (rotación).
+function generarPlanillaSemana(fecha = new Date()) {
+  // La semana actual arranca en DIURNO (según lo acordado). Se toma
+  // la paridad de la semana actual como referencia "diurna", de modo
+  // que a partir de aquí alterne diurno/nocturno cada semana.
+  const SEMANA_BASE = numeroSemana(new Date(2026, 6, 14)) // 14-jul-2026
+  const esDiurno = (numeroSemana(fecha) - SEMANA_BASE) % 2 === 0
+
+  const tipo = esDiurno ? 'diurno' : 'nocturno'
+  // Teniente fijo por tipo (rotación acordada).
+  const encargado = esDiurno ? 'teniente1' : 'teniente2'
+
+  return {
+    id: `semana-${numeroSemana(fecha)}`,
+    titulo: esDiurno ? 'Turno Diurno' : 'Guardia Nocturna',
+    subtitulo: `Semana ${numeroSemana(fecha)} · ${fecha.getFullYear()}`,
+    plazo: esDiurno
+      ? 'Franjas de 09:30 a 21:30 hrs.'
+      : 'Franja única: 21:30 a 09:30 hrs.',
+    tipo,
+    encargado,
+    tareas: [
+      'Revisión de material mayor y menor',
+      'Control de equipos de respiración autónoma',
+      'Limpieza y orden del cuartel',
     ],
-  },
-]
+    bloques: esDiurno ? generarBloquesDiurno() : generarBloquesNocturno(),
+  }
+}
+
+// Planilla activa de la semana actual (una sola).
+export const planillaActual = generarPlanillaSemana()
+
+// Se mantiene como arreglo de una posición para compatibilidad con
+// la vista (que itera sobre las planillas).
+export const planillasTurno = [planillaActual]
 
 // Comunicados y documentos internos
 export const comunicados = [

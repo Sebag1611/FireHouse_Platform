@@ -1,21 +1,25 @@
 import { SesionProvider } from './context'
 import PanelLayout from './components/PanelLayout'
+import RequiereSesion from './components/RequiereSesion'
 
 /**
  * Envoltura del área privada.
  *
- * Combina dos piezas:
+ * Combina tres piezas:
  *  1. SesionProvider: pone a disposición el rol activo y sus
  *     permisos para todas las vistas internas (vía Context).
- *  2. PanelLayout: la estructura visual (sidebar + topbar).
+ *  2. RequiereSesion: exige haber iniciado sesión; si no, manda
+ *     al login. Así el panel no es accesible sin autenticarse.
+ *  3. PanelLayout: la estructura visual (sidebar + topbar).
  *
- * Todas las rutas del panel se envuelven con este layout, de modo
- * que comparten la misma sesión y el mismo marco visual.
+ * Todas las rutas del panel se envuelven con este layout.
  */
 export default function LayoutPrivado({ children }) {
   return (
     <SesionProvider>
-      <PanelLayout>{children}</PanelLayout>
+      <RequiereSesion>
+        <PanelLayout>{children}</PanelLayout>
+      </RequiereSesion>
     </SesionProvider>
   )
 }

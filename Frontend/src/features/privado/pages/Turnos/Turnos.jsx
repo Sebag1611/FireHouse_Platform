@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { planillasTurno } from '../../../../data/personal'
 import { useSesion } from '../../context'
 import {
-  PERMISOS, TENIENTES, getRango,
+  PERMISOS, TENIENTES, getRango, esTeniente,
 } from '../../../../data/roles'
 import {
   IconoCalendario, IconoCheck, IconoOjo, IconoCandado,
-  IconoLapiz, IconoPersona,
+  IconoLapiz, IconoPersona, IconoBasura, IconoDescargaPDF,
 } from '../../../../components/ui/Icono'
+import FormCrearGuardia from './FormCrearGuardia'
+import { descargarTurnoPDF } from './descargarTurnoPDF'
 import '../../estilos-panel.css'
 import './Turnos.css'
 
@@ -37,15 +39,26 @@ export default function Turnos() {
   const { rangoId, puede, usuario } = useSesion()
   const puedeMarcar = puede(PERMISOS.MARCAR_ASISTENCIA_TURNO)
   const configuraGlobal = puede(PERMISOS.CONFIGURAR_TURNOS) // Dir/Cap
+  // Puede crear una guardia nueva: Directora, Capitán o cualquier
+  // teniente (son quienes arman las guardias de la semana).
+  const puedeCrearGuardia = configuraGlobal || esTeniente(rangoId)
 
   const [planillas, setPlanillas] = useState(planillasTurno)
   // Bloque en edición: { planillaId, bloqueId } o null.
   const [editando, setEditando] = useState(null)
+  // Controla el formulario de creación de guardia (plantilla).
+  const [creandoGuardia, setCreandoGuardia] = useState(false)
 
   // ¿El usuario actual puede configurar ESTA planilla?
   // Dir/Cap siempre; un teniente solo si es el encargado de ella.
   const puedeConfigurar = (planilla) =>
     configuraGlobal || rangoId === planilla.encargado
+
+  // Agrega una nueva guardia (planilla) creada desde la plantilla.
+  const crearGuardia = (nuevaPlanilla) => {
+    setPlanillas((prev) => [nuevaPlanilla, ...prev])
+    setCreandoGuardia(false)
+  }
 
   // Anotarse / salir de un bloque (si hay cupo y no está cerrado).
   const alternarBloque = (idPlanilla, idBloque) => {
@@ -100,6 +113,40 @@ export default function Turnos() {
     setEditando(null)
   }
 
+  // Eliminar una planilla (turno) completa.
+  const eliminarPlanilla = (idPlanilla) => {
+    if (!window.confirm('¿Eliminar este turno completo? Esta acción no se puede deshacer.')) return
+    setPlanillas((prev) => prev.filter((pl) => pl.id !== idPlanilla))
+  }
+
+  // Eliminar un bloque (módulo) dentro de una planilla.
+  const eliminarBloque = (idPlanilla, idBloque) => {
+    setPlanillas((prev) =>
+      prev.map((pl) =>
+        pl.id === idPlanilla
+          ? { ...pl, bloques: pl.bloques.filter((b) => b.id !== idBloque) }
+          : pl
+      )
+    )
+  }
+
+  // Eliminar una tarea dentro de una planilla.
+  const eliminarTarea = (idPlanilla, indiceTarea) => {
+    setPlanillas((prev) =>
+      prev.map((pl) =>
+        pl.id === idPlanilla
+          ? { ...pl, tareas: pl.tareas.filter((_, i) => i !== indiceTarea) }
+          : pl
+      )
+    )
+  }
+
+  // Descargar el turno como PDF para registro físico.
+  const descargarPDF = (planilla) => {
+    const encargado = getRango(planilla.encargado)
+    descargarTurnoPDF(planilla, encargado)
+  }
+
   return (
     <>
       <div className="vista-head">
@@ -109,6 +156,18 @@ export default function Turnos() {
           semana entre los tenientes.
         </p>
       </div>
+
+      {/* Crear guardia: tenientes, capitán y directora. */}
+      {puedeCrearGuardia && (
+        <div className="turnos-acciones">
+          <button
+            className="btn btn-primario"
+            onClick={() => setCreandoGuardia(true)}
+          >
+            <IconoCalendario width={16} /> Crear nueva guardia
+          </button>
+        </div>
+      )}
 
       {/* Aviso según el permiso de asistencia del rol. */}
       {puedeMarcar ? (
@@ -142,6 +201,27 @@ export default function Turnos() {
               </span>
             </header>
 
+            {/* Acciones del turno: descargar PDF (todos) y, para
+                quien configura, eliminar el turno completo. */}
+            <div className="planilla__acciones">
+              <button
+                className="btn-mini"
+                onClick={() => descargarPDF(pl)}
+                title="Descargar turno como PDF"
+              >
+                <IconoDescargaPDF width={14} /> Descargar PDF
+              </button>
+              {puedeEditar && (
+                <button
+                  className="btn-mini btn-mini--peligro"
+                  onClick={() => eliminarPlanilla(pl.id)}
+                  title="Eliminar turno"
+                >
+                  <IconoBasura width={14} /> Eliminar turno
+                </button>
+              )}
+            </div>
+
             {pl.plazo && <p className="planilla__plazo">{pl.plazo}</p>}
 
             {/* Encargado de turno de la semana. */}
@@ -167,6 +247,31 @@ export default function Turnos() {
                 </strong>
               )}
             </div>
+
+            {/* Tareas correspondientes a la guardia (si tiene). */}
+            {pl.tareas && pl.tareas.length > 0 && (
+              <div className="planilla__tareas">
+                <span className="planilla__tareas-rotulo">
+                  <IconoCheck width={14} /> Tareas de la guardia
+                </span>
+                <ul>
+                  {pl.tareas.map((t, i) => (
+                    <li key={i}>
+                      <span>{t}</span>
+                      {puedeEditar && (
+                        <button
+                          className="planilla__tarea-quitar"
+                          onClick={() => eliminarTarea(pl.id, i)}
+                          aria-label="Eliminar tarea"
+                        >
+                          <IconoBasura width={13} />
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <ul className="bloques">
               {pl.bloques.map((b) => {
@@ -257,19 +362,32 @@ export default function Turnos() {
                       {anotados}/{b.cupos}
                     </span>
 
-                    {/* Botón de editar cupos/horario (solo config). */}
+                    {/* Botones de config del bloque (editar/eliminar). */}
                     {puedeEditar && (
-                      <button
-                        className="bloque__editar"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setEditando({ planillaId: pl.id, bloqueId: b.id })
-                        }}
-                        aria-label="Editar bloque"
-                        title="Editar cupos y horario"
-                      >
-                        <IconoLapiz width={15} />
-                      </button>
+                      <span className="bloque__acciones">
+                        <button
+                          className="bloque__editar"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditando({ planillaId: pl.id, bloqueId: b.id })
+                          }}
+                          aria-label="Editar bloque"
+                          title="Editar cupos y horario"
+                        >
+                          <IconoLapiz width={15} />
+                        </button>
+                        <button
+                          className="bloque__eliminar"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            eliminarBloque(pl.id, b.id)
+                          }}
+                          aria-label="Eliminar bloque"
+                          title="Eliminar este bloque"
+                        >
+                          <IconoBasura width={15} />
+                        </button>
+                      </span>
                     )}
                   </li>
                 )
@@ -278,6 +396,15 @@ export default function Turnos() {
           </section>
         )
       })}
+
+      {/* Formulario de creación de guardia (plantilla con tareas). */}
+      {creandoGuardia && (
+        <FormCrearGuardia
+          rangoActual={rangoId}
+          onCrear={crearGuardia}
+          onCerrar={() => setCreandoGuardia(false)}
+        />
+      )}
     </>
   )
 }

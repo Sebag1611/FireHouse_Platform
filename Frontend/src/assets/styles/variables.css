@@ -36,6 +36,11 @@
   --verde-osc: #0f4c2e;   /* Verde oscuro: hover y degradados */
   --verde-claro: #2e9d68; /* Verde claro: acentos y enlaces */
 
+  /* --- Rojo institucional (acento, identidad bomberil) --- */
+  --rojo: #c1272d;        /* Rojo bombero principal (acentos) */
+  --rojo-osc: #97161b;    /* Rojo oscuro: hover */
+  --rojo-claro: #e8474d;  /* Rojo claro: detalles y realces */
+
   /* --- Estados operativos (pizarra de carros, HU-13) --- */
   --disponible: #27c26e;  /* Unidad lista */
   --emergencia: #e63946;  /* En emergencia */

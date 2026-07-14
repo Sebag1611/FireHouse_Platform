@@ -3,38 +3,54 @@ import {
   getRango, getNivel, puede as puedeRango, nombreConNumero,
 } from '../../../data/roles'
 
-/* Contexto de sesión del área privada.
-   Guarda el rango con el que se está viendo el panel y permite
-   cambiarlo (selector de rol para la demostración al cliente).
-   Los nombres reales de cada rango viven en data/roles.js, así
-   que aquí solo los leemos desde el rango activo. */
+/* ============================================================
+   Contexto de sesión del área privada.
+   ------------------------------------------------------------
+   Guarda el rango del usuario autenticado. El rango lo escribe
+   el login en localStorage al validar las credenciales; aquí lo
+   leemos al iniciar. Si no hay sesión, rangoId es null y la
+   guardia de acceso (RequiereSesion) redirige al login.
+   ============================================================ */
 
 const SesionContext = createContext(null)
 
+// Clave donde el login guarda el rango del usuario autenticado.
+const CLAVE_RANGO = 'firehouse-rango'
+
 export function SesionProvider({ children }) {
-  // Al iniciar, toma el rango con el que se autenticó el usuario
-  // (guardado por el login en localStorage). Si no hay ninguno
-  // —por ejemplo, si se entra directo al panel en la demo—, usa
-  // Capitán por defecto.
+  // Lee el rango guardado por el login. Si no hay, queda null
+  // (sesión no iniciada).
   const [rangoId, setRangoId] = useState(() => {
-    if (typeof window === 'undefined') return 'capitan'
-    return localStorage.getItem('firehouse-rango') || 'capitan'
+    if (typeof window === 'undefined') return null
+    return localStorage.getItem(CLAVE_RANGO) || null
   })
 
-  const rango = getRango(rangoId)
-  const nivel = getNivel(rangoId)
+  // ¿Hay una sesión válida iniciada?
+  const autenticado = Boolean(rangoId)
+
+  // Cierra la sesión (borra el rango guardado).
+  const cerrarSesion = () => {
+    localStorage.removeItem(CLAVE_RANGO)
+    setRangoId(null)
+  }
+
+  // Datos derivados del rango (solo si hay sesión).
+  const rango = autenticado ? getRango(rangoId) : null
+  const nivel = autenticado ? getNivel(rangoId) : null
 
   const valor = {
     rangoId,
     setRangoId,
+    autenticado,
+    cerrarSesion,
     rango,
     nivel,
     // Atajo para preguntar permisos desde cualquier vista.
-    puede: (permiso) => puedeRango(rangoId, permiso),
+    puede: (permiso) => (autenticado ? puedeRango(rangoId, permiso) : false),
     // Nombre de la persona del rango (ej. "Omar Cruz").
-    usuario: rango.persona,
+    usuario: rango ? rango.persona : '',
     // Nombre con su número identificador (ej. "302 · Omar Cruz").
-    usuarioConNumero: nombreConNumero(rangoId),
+    usuarioConNumero: autenticado ? nombreConNumero(rangoId) : '',
   }
 
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>

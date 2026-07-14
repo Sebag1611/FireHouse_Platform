@@ -9,8 +9,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 80% at 75% 30%, rgba(21, 102, 63, 0.22), transparent 65%),
-    radial-gradient(ellipse 50% 60% at 10% 90%, rgba(46, 157, 104, 0.08), transparent 60%),
+    radial-gradient(ellipse 70% 80% at 78% 25%, rgba(21, 102, 63, 0.24), transparent 62%),
+    radial-gradient(ellipse 60% 70% at 12% 88%, rgba(193, 39, 45, 0.18), transparent 60%),
     var(--carbon);
   z-index: -1;
 }
@@ -48,7 +48,7 @@
 }
 
 .hero__titulo span {
-  color: var(--verde);
+  color: var(--rojo-claro);
 }
 
 .hero__bajada {
@@ -376,9 +376,9 @@
 
 .cta-final__caja {
   background:
-    repeating-linear-gradient(-45deg, rgba(21, 102, 63, 0.08) 0 24px, transparent 24px 48px),
-    linear-gradient(140deg, var(--verde-osc), var(--carbon-2));
-  border: 1px solid var(--verde-osc);
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 0 24px, transparent 24px 48px),
+    linear-gradient(135deg, var(--verde-osc) 0%, #7a2420 55%, var(--rojo-osc) 100%);
+  border: 1px solid var(--rojo-osc);
   border-radius: var(--radio);
   padding: 60px 48px;
   text-align: center;
