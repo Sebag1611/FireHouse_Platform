@@ -128,15 +128,6 @@ export default function Acceso() {
           </button>
         </form>
 
-        <div className="acceso__demo">
-          <span className="acceso__demo-titulo">Usuarios de demostración</span>
-          <ul>
-            <li><b>18123456-3</b> · Capitán</li>
-            <li><b>19234567-7</b> · Directora</li>
-            <li><b>20345678-6</b> · Teniente</li>
-          </ul>
-          <span className="acceso__demo-clave">Contraseña: <b>pass123</b></span>
-        </div>
         <Link to="/" className="acceso__volver">
           ← Volver al sitio público
         </Link>
