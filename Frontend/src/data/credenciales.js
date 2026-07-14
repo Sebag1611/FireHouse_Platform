@@ -20,6 +20,8 @@ const USUARIOS = [
   { rut: '18123456-3', clave: CLAVE_DEMO, rangoId: 'capitan' },
   { rut: '19234567-7', clave: CLAVE_DEMO, rangoId: 'director' },
   { rut: '20345678-6', clave: CLAVE_DEMO, rangoId: 'teniente1' },
+  // Bombero de base.
+  { rut: '12312312-3', clave: CLAVE_DEMO, rangoId: 'bombero' },
 ]
 
 /**
