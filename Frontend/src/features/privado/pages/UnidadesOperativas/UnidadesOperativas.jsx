@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { unidades as unidadesData, ESTADOS_OPERATIVOS } from '../../../../data/contenidoPublico'
-import { useSesion } from '../../context'
-import { PERMISOS } from '../../../../data/roles'
+import { useSesion } from '../../context/SesionContext' // Ruta del contexto corregida
+// Eliminamos la importación de PERMISOS
 import { IconoUbicacion } from '../../../../components/ui/Icono'
 import '../../estilos-panel.css'
 import './UnidadesOperativas.css'
@@ -9,10 +9,19 @@ import './UnidadesOperativas.css'
 const OPCIONES = ['disponible', 'emergencia', 'servicio', 'taller']
 
 export default function UnidadesOperativas() {
-  const { puede } = useSesion()
+  // 1. Extraemos los roles reales de la base de datos
+  const { rango, tipo } = useSesion()
   const [unidades, setUnidades] = useState(unidadesData)
-  const puedeCambiar = puede(PERMISOS.CAMBIAR_ESTADO_UNIDAD)
-  const puedeMover = puede(PERMISOS.MOVER_MATERIAL)
+
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  // 2. Definimos quién tiene los privilegios según tu texto (Tenientes, Capitán, Director)
+  const rolesAutorizados = ['capitán', 'capitan', 'director', 'teniente']
+  const tienePermiso = rolesAutorizados.includes(rangoActual) || rolesAutorizados.includes(tipoActual)
+
+  const puedeCambiar = tienePermiso
+  const puedeMover = tienePermiso
 
   const cambiarEstado = (id, nuevo) => {
     setUnidades((prev) =>
@@ -56,7 +65,7 @@ export default function UnidadesOperativas() {
                 </span>
               </div>
 
-              {/* Cambiar estado (según permiso) */}
+              {/* Cambiar estado (según permiso de Django) */}
               {puedeCambiar ? (
                 <div className="unidad-panel-card__acciones">
                   <label>Cambiar estado</label>

@@ -1,12 +1,12 @@
-import { useSesion } from '../../context'
+import { useSesion } from '../../context/SesionContext' // Ruta ajustada a tu nuevo contexto
 import { resumenPanel, comunicados, planillasTurno } from '../../../../data/personal'
-import { PERMISOS } from '../../../../data/roles'
 import { IconoGrupo, IconoCamion, IconoCalendario, IconoBandeja } from '../../../../components/ui/Icono'
 import EmergenciasResumen from '../../../../components/ui/EmergenciasResumen'
 import '../../estilos-panel.css'
 
 export default function Dashboard() {
-  const { usuario, rango, nivel, puede } = useSesion()
+  // 1. Traemos las variables reales de tu base de datos Django
+  const { nombreCompleto, rango, nivel, tipo } = useSesion()
 
   const stats = [
     { valor: resumenPanel.bomberosActivos, label: 'Bomberos activos', clase: 'stat-card--verde', icono: IconoGrupo },
@@ -15,15 +15,26 @@ export default function Dashboard() {
     { valor: resumenPanel.postulacionesPendientes, label: 'Postulaciones pendientes', clase: 'stat-card--rojo', icono: IconoBandeja },
   ]
 
-  // Toma solo el primer nombre de la persona para el saludo.
-  const primerNombre = usuario.split(' ')[0]
+  // 2. Extraemos el primer nombre de forma segura
+  const primerNombre = nombreCompleto ? nombreCompleto.split(' ')[0] : 'Bombero'
+
+  // Preparamos las etiquetas visuales para tu cargo
+  const etiquetaCargo = rango || tipo || 'Sin Rango'
+  const etiquetaNivel = nivel ? ` · ${nivel}` : ''
+
+  // 3. Transformamos la vieja lógica de "puede()" a tus rangos reales
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  const puedeVerComunicados = ['capitán', 'capitan', 'director', 'teniente'].includes(rangoActual) || ['capitán', 'capitan', 'director', 'teniente'].includes(tipoActual)
+  const puedeVerTurnos = ['capitán', 'capitan', 'director'].includes(rangoActual) || ['capitán', 'capitan', 'director'].includes(tipoActual)
 
   return (
     <>
       <div className="vista-head">
         <h1>Hola, {primerNombre}</h1>
         <p>
-          Sesión iniciada como {rango.nombre} · {nivel.etiqueta}
+          Sesión iniciada como {etiquetaCargo}{etiquetaNivel}
         </p>
       </div>
 
@@ -43,8 +54,8 @@ export default function Dashboard() {
       </div>
 
       <div className="panel-dashboard-grid">
-        {/* Últimos comunicados (todos los que pueden verlos). */}
-        {puede(PERMISOS.VER_COMUNICADOS) && (
+        {/* Últimos comunicados (visibilidad según rol de DB) */}
+        {puedeVerComunicados && (
           <div className="panel-box">
             <div className="panel-box__titulo">Últimos comunicados</div>
             {comunicados.slice(0, 3).map((c) => (
@@ -59,8 +70,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Resumen de planillas de turno (todos los que ven turnos). */}
-        {puede(PERMISOS.VER_TURNOS) && (
+        {/* Resumen de planillas de turno (visibilidad según rol de DB) */}
+        {puedeVerTurnos && (
           <div className="panel-box">
             <div className="panel-box__titulo">Planillas de turno</div>
             {planillasTurno.map((p) => {

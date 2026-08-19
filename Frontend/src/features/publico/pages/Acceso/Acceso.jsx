@@ -2,75 +2,84 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from '../../../../components/ui/Logo'
 import { IconoEscudo } from '../../../../components/ui/Icono'
-import { validarCredenciales } from '../../../../data/credenciales'
+// 1. Importamos el hook de nuestro nuevo Contexto real
+import { useSesion } from '../../../privado/context/SesionContext'
 import './Acceso.css'
+const apiUrl = import.meta.env.VITE_API_URL;
 
 export default function Acceso() {
   const [usuario, setUsuario] = useState('')
   const [clave, setClave] = useState('')
   const [aviso, setAviso] = useState('')
   const navigate = useNavigate()
+  
+  // 2. Extraemos la función iniciarSesion del contexto
+  const { iniciarSesion } = useSesion()
 
-  /**
-   * Limpia lo que el usuario escribe en el campo RUT, permitiendo
-   * SOLO dígitos (0-9) y la letra K como dígito verificador final.
-   * NO inserta el guion aquí: mientras se escribe, el guion saltaría
-   * de posición y molestaría. El guion se agrega al enviar (ver
-   * formatearConGuion), que es cuando el dato viaja a la BD.
-   */
   const limpiarRut = (valor) => {
-    // Deja solo dígitos y la letra k/K.
     let limpio = valor.replace(/[^0-9kK]/g, '')
-    // La 'k' solo vale como último carácter; si va en medio, se quita.
     limpio = limpio.replace(/[kK]/g, (match, offset) =>
       offset === limpio.length - 1 ? 'K' : ''
     )
     return limpio.toUpperCase()
   }
 
-  /**
-   * Formatea el RUT al formato de la base de datos: cuerpo + guion +
-   * dígito verificador (ej. "12345678-9"). Se usa al enviar.
-   */
   const formatearConGuion = (rutLimpio) => {
     if (rutLimpio.length < 2) return rutLimpio
     return `${rutLimpio.slice(0, -1)}-${rutLimpio.slice(-1)}`
   }
 
   const cambiarRut = (e) => {
-    // Mientras escribe: solo limpia (números + K), sin guion, para
-    // que el tecleo sea natural y el guion no salte de posición.
     setUsuario(limpiarRut(e.target.value))
     setAviso('')
   }
 
   const salirRut = () => {
-    // Al salir del campo (onBlur): agrega el guion antes del dígito
-    // verificador, dejándolo en el formato de la BD (12345678-9).
     setUsuario((actual) => formatearConGuion(limpiarRut(actual)))
   }
 
-  const entrar = (e) => {
+  const entrar = async (e) => {
     e.preventDefault()
-    // Nos aseguramos de tener el RUT con guion aunque no se haya
-    // disparado el onBlur (ej. si envían con Enter directo).
+    
     const rut = formatearConGuion(limpiarRut(usuario))
+    
     if (!rut.trim() || !clave.trim()) {
       setAviso('Ingresa tu RUT y contraseña.')
       return
     }
-    // Valida las credenciales contra los usuarios de prueba.
-    const resultado = validarCredenciales(rut, clave)
-    if (!resultado.ok) {
-      setAviso('RUT o contraseña incorrectos.')
-      return
+
+    try {
+      const respuesta = await fetch(`${apiUrl}/api/Administracion/login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rut: rut,
+          contraseña: clave 
+        })
+      })
+
+      const data = await respuesta.json()
+
+      if (!respuesta.ok) {
+        setAviso(data.error || 'Error al iniciar sesión.')
+        return
+      }
+
+      // Guardamos la info de Django en la memoria de React
+      iniciarSesion(data)
+      
+      // ¡SOLUCIÓN DEL 404! 
+      // Todos van al panel principal. Tu componente RutaProtegida se encargará 
+      // de bloquearles las pantallas internas que no deban ver.
+      setTimeout(() => {
+        navigate('/panel')
+      }, 50)
+    } catch (error) {
+      console.error(error)
+      setAviso('No se pudo conectar con el servidor.')
     }
-    // Guarda el rango del usuario autenticado para que el panel lo
-    // lea al iniciar la sesión (ver SesionContext).
-    localStorage.setItem('firehouse-rango', resultado.rangoId)
-    // En producción, este paso lo haría el backend devolviendo un
-    // token (JWT) con el rol; aquí lo simulamos con localStorage.
-    navigate('/panel')
   }
 
   return (

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useSesion } from '../../context'
-import { PERMISOS } from '../../../../data/roles'
+import { useSesion } from '../../context/SesionContext' // Ajustamos la ruta del contexto
 import { ROUTES } from '../../../../app/routes'
 import Logo from '../../../../components/ui/Logo'
 import ToggleTema from '../../../../components/ui/ToggleTema'
@@ -11,43 +10,38 @@ import {
 } from '../../../../components/ui/Icono'
 import './PanelLayout.css'
 
-/**
- * ============================================================
- *  PanelLayout · Estructura del área privada
- * ============================================================
- *  Provee el "marco" del panel interno: barra lateral (sidebar)
- *  con el menú, barra superior (topbar) con el usuario y el
- *  selector de rol, y el área central donde se renderiza cada
- *  vista.
- *
- *  Punto clave: el menú se filtra según los permisos del rol
- *  activo. Un teniente no ve "Postulaciones" si no tiene ese
- *  permiso, etc. Así la navegación refleja el control de acceso.
- * ============================================================
- */
-
-/**
- * Definición del menú lateral. Cada entrada declara el permiso
- * que se necesita para verla; el layout luego filtra la lista
- * según el rol actual. Las URLs vienen de ROUTES (centralizadas).
- */
+// 1. REEMPLAZAMOS LOS PERMISOS FALSOS POR TUS ROLES REALES DE LA BD
 const MENU = [
-  { to: ROUTES.PANEL, texto: 'Dashboard', icono: IconoPanel, permiso: PERMISOS.VER_PANEL, exacto: true },
-  { to: ROUTES.PANEL_PERSONAL, texto: 'Personal', icono: IconoGrupo, permiso: PERMISOS.VER_BOMBEROS },
-  { to: ROUTES.PANEL_UNIDADES, texto: 'Material Mayor', icono: IconoCamion, permiso: PERMISOS.VER_UNIDADES },
-  { to: ROUTES.PANEL_TURNOS, texto: 'Turnos', icono: IconoCalendario, permiso: PERMISOS.VER_TURNOS },
-  { to: ROUTES.PANEL_COMUNICADOS, texto: 'Comunicados', icono: IconoDocumentos, permiso: PERMISOS.VER_COMUNICADOS },
-  { to: ROUTES.PANEL_POSTULACIONES, texto: 'Postulaciones', icono: IconoBandeja, permiso: PERMISOS.VER_POSTULACIONES },
+  // Dashboard lo ven todos, no le ponemos restricción de roles
+  { to: ROUTES.PANEL, texto: 'Dashboard', icono: IconoPanel, exacto: true },
+  { to: ROUTES.PANEL_PERSONAL, texto: 'Personal', icono: IconoGrupo, rolesPermitidos: ['capitán', 'capitan', 'director'] },
+  { to: ROUTES.PANEL_UNIDADES, texto: 'Material Mayor', icono: IconoCamion, rolesPermitidos: ['capitán', 'capitan', 'director', 'teniente'] },
+  { to: ROUTES.PANEL_TURNOS, texto: 'Turnos', icono: IconoCalendario, rolesPermitidos: ['capitán', 'capitan', 'director'] },
+  { to: ROUTES.PANEL_COMUNICADOS, texto: 'Comunicados', icono: IconoDocumentos, rolesPermitidos: ['capitán', 'capitan', 'director', 'teniente'] },
+  { to: ROUTES.PANEL_POSTULACIONES, texto: 'Postulaciones', icono: IconoBandeja, rolesPermitidos: ['director'] },
 ]
 
 export default function PanelLayout({ children }) {
-  const { rango, nivel, usuarioConNumero, puede, cerrarSesion } = useSesion()
-  // Estado del menú lateral en móvil (abierto/cerrado).
+  // 2. EXTRAEMOS LA DATA REAL DE DJANGO (desde tu nuevo SesionContext)
+  const { rango, nivel, tipo, nombreCompleto, cerrarSesion } = useSesion()
+  
   const [menuAbierto, setMenuAbierto] = useState(false)
   const navigate = useNavigate()
 
-  // Solo mostramos las entradas del menú permitidas para el rol.
-  const visibles = MENU.filter((m) => puede(m.permiso))
+  // 3. FILTRAMOS EL MENÚ SEGÚN EL RANGO O TIPO QUE MANDÓ DJANGO
+  const visibles = MENU.filter((m) => {
+    // Si no tiene rolesPermitidos (como el Dashboard), se muestra siempre
+    if (!m.rolesPermitidos) return true;
+
+    const rangoActual = rango ? rango.toLowerCase() : '';
+    const tipoActual = tipo ? tipo.toLowerCase() : '';
+
+    return m.rolesPermitidos.includes(rangoActual) || m.rolesPermitidos.includes(tipoActual);
+  })
+
+  // Preparamos el texto del cargo para mostrarlo en la esquina
+  const etiquetaCargo = rango || tipo || 'Sin Rango'
+  const etiquetaNivel = nivel ? ` · ${nivel}` : ''
 
   return (
     <div className="panel">
@@ -86,7 +80,6 @@ export default function PanelLayout({ children }) {
           })}
         </nav>
 
-        {/* Cierra la sesión y regresa a la cara pública. */}
         <button
           className="panel__salir"
           onClick={() => {
@@ -101,7 +94,6 @@ export default function PanelLayout({ children }) {
 
       {/* ---------- CONTENIDO PRINCIPAL ---------- */}
       <div className="panel__main">
-        {/* Barra superior */}
         <header className="panel__top">
           <button
             className="panel__hamburguesa"
@@ -111,18 +103,14 @@ export default function PanelLayout({ children }) {
             <IconoMenu width={22} />
           </button>
 
-          {/* Usuario y rol actual */}
+          {/* 4. MOSTRAMOS LOS DATOS DEL USUARIO LOGUEADO */}
           <div className="panel__usuario">
-            <span className="panel__usuario-nombre">{usuarioConNumero}</span>
-            <span
-              className="panel__usuario-rango"
-              style={{ '--c': nivel.color }}
-            >
-              {rango.nombre} · {nivel.etiqueta}
+            <span className="panel__usuario-nombre">{nombreCompleto}</span>
+            <span className="panel__usuario-rango">
+              {etiquetaCargo} {etiquetaNivel}
             </span>
           </div>
 
-          {/* Botón Home: regresa al Dashboard del panel. */}
           <button
             className="panel__home"
             onClick={() => navigate(ROUTES.PANEL)}
@@ -138,7 +126,6 @@ export default function PanelLayout({ children }) {
         <div className="panel__contenido">{children}</div>
       </div>
 
-      {/* Fondo oscuro tras el menú móvil: al hacer clic, cierra. */}
       {menuAbierto && (
         <div className="panel__overlay" onClick={() => setMenuAbierto(false)} />
       )}

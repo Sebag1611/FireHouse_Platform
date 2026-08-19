@@ -1,31 +1,24 @@
-import { useSesion } from '../../context'
+import { useSesion } from '../../context/SesionContext' // Ruta del contexto corregida
 import { comunicados } from '../../../../data/personal'
-import { PERMISOS } from '../../../../data/roles'
 import {
   IconoDocumentos, IconoSubir, IconoOjo, IconoSalir,
 } from '../../../../components/ui/Icono'
 import '../../estilos-panel.css'
 
-/**
- * Vista de Comunicados y documentos internos.
- *
- * Permisos:
- *  - VER_COMUNICADOS: ver la lista y DESCARGAR documentos
- *    (Bomberos, oficiales, administrativos... todos los que entran).
- *  - GESTIONAR_COMUNICADOS: además, SUBIR nuevos documentos
- *    (oficiales y administrativos).
- *
- * Nota: la descarga aquí es simulada (carcasa sin backend). En
- * producción, el botón dispararía la descarga real del archivo.
- */
 export default function Comunicados() {
-  const { puede } = useSesion()
-  const gestiona = puede(PERMISOS.GESTIONAR_COMUNICADOS) // puede subir
+  // 1. Extraemos los datos reales de Django
+  const { rango, tipo } = useSesion()
+  
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  // 2. Definimos quién puede GESTIONAR (Subir comunicados). Ej: Capitán y Director
+  const rolesAutorizados = ['capitán', 'capitan', 'director']
+  const gestiona = rolesAutorizados.includes(rangoActual) || rolesAutorizados.includes(tipoActual)
 
   // Descarga simulada: en producción apuntaría al archivo real.
   const descargar = (doc) => {
     // Aquí iría, por ejemplo: window.open(urlDelArchivo, '_blank')
-    // Como es carcasa, solo avisamos qué se descargaría.
     alert(`Descargando: ${doc.archivo}`)
   }
 
@@ -84,7 +77,7 @@ export default function Comunicados() {
         </div>
       </div>
 
-      {/* Aviso según lo que puede hacer el rol. */}
+      {/* Aviso según lo que puede hacer el rol de Django. */}
       {gestiona ? (
         <div className="nota-info">
           <IconoSubir width={18} />

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useSesion } from '../../context'
+import { useSesion } from '../../context/SesionContext' // Ruta del contexto corregida
 import { bomberos as bomberosData } from '../../../../data/personal'
-import { getRango, getNivel, PERMISOS } from '../../../../data/roles'
+import { getRango, getNivel } from '../../../../data/roles' // Se quitó PERMISOS
 import { IconoLapiz, IconoOjo, IconoGrupo } from '../../../../components/ui/Icono'
 import FormCrearPersonal from './FormCrearPersonal'
 import '../../estilos-panel.css'
@@ -14,16 +14,22 @@ const estadoBombero = {
 }
 
 export default function Personal() {
-  const { puede } = useSesion()
-  const editar = puede(PERMISOS.EDITAR_BOMBEROS)
-  const crear = puede(PERMISOS.CREAR_PERSONAL) // Capitán y Directora
+  // 1. Traemos los datos reales de Django
+  const { rango, tipo } = useSesion()
+  
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
 
-  // Lista local (para reflejar altas nuevas en la demo).
+  // 2. Definimos quién puede editar (Capitán y Director)
+  const puedeModificar = ['capitán', 'capitan', 'director'].includes(rangoActual) || ['capitán', 'capitan', 'director'].includes(tipoActual)
+  
+  const editar = puedeModificar
+  const crear = puedeModificar 
+
+  // Lista local (para la tabla visual por ahora)
   const [bomberos, setBomberos] = useState(bomberosData)
-  // Controla la apertura del formulario de alta.
   const [creando, setCreando] = useState(false)
 
-  // Agrega un nuevo integrante a la lista (solo en memoria).
   const agregarPersona = (persona) => {
     setBomberos((prev) => [
       ...prev,
@@ -79,18 +85,18 @@ export default function Personal() {
             </thead>
             <tbody>
               {bomberos.map((b) => {
-                const rango = getRango(b.rango)
-                const nivel = getNivel(b.rango)
+                const rangoData = getRango(b.rango)
+                const nivelData = getNivel(b.rango)
                 const est = estadoBombero[b.estado] ?? estadoBombero.activo
                 return (
                   <tr key={b.id}>
                     <td className="tabla__nombre">{b.nombre}</td>
                     <td>
-                      {rango.numero ? `${rango.numero} · ${rango.nombre}` : rango.nombre}
+                      {rangoData.numero ? `${rangoData.numero} · ${rangoData.nombre}` : rangoData.nombre}
                     </td>
                     <td>
-                      <span className="chip" style={{ '--c': nivel.color }}>
-                        {nivel.etiqueta}
+                      <span className="chip" style={{ '--c': nivelData.color }}>
+                        {nivelData.etiqueta}
                       </span>
                     </td>
                     <td>

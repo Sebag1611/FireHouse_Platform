@@ -1,27 +1,37 @@
-import { useSesion } from '../../context'
+import { useSesion } from '../../context/SesionContext' // Ajusta la ruta si es necesario
 import SinPermiso from '../SinPermiso'
 
 /**
- * Guardia de permisos para las vistas del panel.
+ * Guardia de permisos conectado a la Base de Datos (Django).
  *
- * @param {string} permiso   - Permiso requerido para ver el contenido.
- * @param {string} mensaje   - Texto a mostrar si no tiene acceso.
- * @param {ReactNode} children - La vista a proteger.
- *
- * Consulta el rol actual (vía useSesion) y decide:
- *  - Si tiene el permiso  -> muestra la vista (children).
- *  - Si NO lo tiene        -> muestra el aviso <SinPermiso>.
- *
- * Centralizar aquí la verificación evita repetir el mismo "if de
- * permiso" en cada página, y hace que la lógica de acceso sea
- * consistente en todo el panel.
+ * @param {Array} rolesPermitidos - Lista de rangos que pueden entrar (ej. ['capitán', 'director']).
+ * @param {string} mensaje        - Texto a mostrar si no tiene acceso.
+ * @param {ReactNode} children    - La vista a proteger.
  */
-export default function RutaProtegida({ permiso, mensaje, children }) {
-  const { puede } = useSesion()
+export default function RutaProtegida({ rolesPermitidos, mensaje, children }) {
+  // Extraemos los datos reales que llegaron del backend
+  const { autenticado, rango, tipo } = useSesion()
 
-  if (!puede(permiso)) {
-    return <SinPermiso mensaje={mensaje} />
+  // 1. Si no hay sesión iniciada, ni siquiera debería intentar entrar
+  if (!autenticado) {
+    return <SinPermiso mensaje="Debes iniciar sesión para acceder a esta área." />
   }
 
+  // 2. Si la página requiere roles específicos, validamos contra la BD
+  if (rolesPermitidos && rolesPermitidos.length > 0) {
+    // Pasamos el rango a minúsculas para evitar problemas (ej. "Capitán" vs "capitán")
+    const rangoActual = rango ? rango.toLowerCase() : '';
+    const tipoActual = tipo ? tipo.toLowerCase() : '';
+
+    // Verificamos si el rango o tipo del usuario está en la lista de permitidos
+    const tienePermiso = rolesPermitidos.includes(rangoActual) || rolesPermitidos.includes(tipoActual);
+
+    if (!tienePermiso) {
+      // Si el backend dice que es Teniente, pero la lista solo dice ['director'], se le bloquea
+      return <SinPermiso mensaje={mensaje || "No tienes los privilegios necesarios."} />
+    }
+  }
+
+  // 3. Si pasa las validaciones, renderiza la vista solicitada
   return children
 }

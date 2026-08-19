@@ -8,6 +8,7 @@ urlpatterns = [
     path('cambiar-rango/', views.cambiar_rango_bombero),
     
     # Autenticación y sesión
+    path('perfil/', views.obtener_perfil),
     path('login/', views.inicio_sesion),
     
     # Gestión de contraseñas

@@ -382,6 +382,49 @@ def cambiar_rango_bombero(request):
         )
 
 
+# ==========================================================
+# OBTENER PERFIL ACTUALIZADO
+# ==========================================================
+@api_view(['POST'])
+def obtener_perfil(request):
+    rut = request.data.get('rut')
+
+    if not rut:
+        return Response({"error": "Falta el RUT"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    rut = formatear_rut(rut)
+
+    try:
+        # Busca a la persona directamente en la BD
+        persona = Persona.objects.get(rut=rut)
+
+        # Revisa si es Bombero
+        if Bombero.objects.filter(rut=persona).exists():
+            bombero = Bombero.objects.get(rut=persona)
+            return Response({
+                "rut": persona.rut,
+                "nombres": persona.nombres,
+                "apellidos": persona.apellidos,
+                "rango": bombero.rango,
+                "nivel": bombero.nivel,
+                "tipo_usuario": "Bombero"
+            }, status=status.HTTP_200_OK)
+
+        # Revisa si es Aspirante
+        elif Aspirante.objects.filter(rut=persona).exists():
+            return Response({
+                "rut": persona.rut,
+                "nombres": persona.nombres,
+                "apellidos": persona.apellidos,
+                "tipo_usuario": "Aspirante"
+            }, status=status.HTTP_200_OK)
+
+        else:
+            return Response({"error": "Usuario sin rol definido"}, status=status.HTTP_403_FORBIDDEN)
+
+    except Persona.DoesNotExist:
+        return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
 # INICIO DE SESIÓN
 
 @api_view(['POST'])

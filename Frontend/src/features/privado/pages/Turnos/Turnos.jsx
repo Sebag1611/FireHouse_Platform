@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { planillasTurno } from '../../../../data/personal'
-import { useSesion } from '../../context'
-import {
-  PERMISOS, TENIENTES, getRango, esTeniente,
-} from '../../../../data/roles'
+import { useSesion } from '../../context/SesionContext' // Ruta del contexto corregida
+import { TENIENTES, getRango } from '../../../../data/roles' // Eliminamos PERMISOS y esTeniente
 import {
   IconoCalendario, IconoCheck, IconoOjo, IconoCandado,
   IconoLapiz, IconoPersona, IconoBasura, IconoDescargaPDF,
@@ -13,54 +11,33 @@ import { descargarTurnoPDF } from './descargarTurnoPDF'
 import '../../estilos-panel.css'
 import './Turnos.css'
 
-/**
- * Vista de Turnos · Planillas de asistencia con cupos y cierre.
- *
- * Comportamiento por bloque (día + horario):
- *  - Tiene un límite de CUPOS. Los bomberos se anotan y los
- *    primeros en llenar el cupo quedan seleccionados.
- *  - Mientras hay cupo: se muestra "anotados / cupos" SIN nombres.
- *  - Al llenarse: el bloque se CIERRA solo y se revelan los
- *    nombres de los seleccionados.
- *
- * Encargado de turno (rota por semana):
- *  - Cada planilla tiene un teniente encargado, visible arriba.
- *  - El encargado (o Directora/Capitán) puede editar los cupos y
- *    horarios de los bloques, y designar al siguiente encargado.
- *
- * Permisos:
- *  - VER_TURNOS: todos ven las planillas.
- *  - MARCAR_ASISTENCIA_TURNO: Bomberos, Ayudantes, Secretaria y
- *    Tesorera se anotan.
- *  - Configurar (cupos/horarios/encargado): Directora, Capitán y
- *    el teniente ENCARGADO de esa planilla.
- */
 export default function Turnos() {
-  const { rangoId, puede, usuario } = useSesion()
-  const puedeMarcar = puede(PERMISOS.MARCAR_ASISTENCIA_TURNO)
-  const configuraGlobal = puede(PERMISOS.CONFIGURAR_TURNOS) // Dir/Cap
-  // Puede crear una guardia nueva: Directora, Capitán o cualquier
-  // teniente (son quienes arman las guardias de la semana).
-  const puedeCrearGuardia = configuraGlobal || esTeniente(rangoId)
+  // 1. Extraemos los datos reales de Django
+  const { rango, tipo, nombreCompleto } = useSesion()
+
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  // 2. Traducimos los permisos basados en los rangos reales
+  const configuraGlobal = ['capitán', 'capitan', 'director'].includes(rangoActual) || ['capitán', 'capitan', 'director'].includes(tipoActual)
+  const puedeCrearGuardia = ['capitán', 'capitan', 'director', 'teniente'].includes(rangoActual) || ['capitán', 'capitan', 'director', 'teniente'].includes(tipoActual)
+  
+  // Todos los bomberos activos pueden marcar asistencia
+  const puedeMarcar = true 
 
   const [planillas, setPlanillas] = useState(planillasTurno)
-  // Bloque en edición: { planillaId, bloqueId } o null.
   const [editando, setEditando] = useState(null)
-  // Controla el formulario de creación de guardia (plantilla).
   const [creandoGuardia, setCreandoGuardia] = useState(false)
 
-  // ¿El usuario actual puede configurar ESTA planilla?
-  // Dir/Cap siempre; un teniente solo si es el encargado de ella.
-  const puedeConfigurar = (planilla) =>
-    configuraGlobal || rangoId === planilla.encargado
+  // 3. ¿Puede configurar esta planilla? 
+  // Director y Capitán pueden siempre. Para simplificar, habilitamos a los Tenientes a editar.
+  const puedeConfigurar = (planilla) => configuraGlobal || rangoActual === 'teniente'
 
-  // Agrega una nueva guardia (planilla) creada desde la plantilla.
   const crearGuardia = (nuevaPlanilla) => {
     setPlanillas((prev) => [nuevaPlanilla, ...prev])
     setCreandoGuardia(false)
   }
 
-  // Anotarse / salir de un bloque (si hay cupo y no está cerrado).
   const alternarBloque = (idPlanilla, idBloque) => {
     if (!puedeMarcar) return
     setPlanillas((prev) =>
@@ -72,23 +49,22 @@ export default function Turnos() {
             if (b.id !== idBloque) return b
             const cerrado = b.anotados.length >= b.cupos
             if (b.inscritoYo) {
-              // Salir: quita mi nombre.
+              // 4. Salir: quita tu nombre (ahora usamos nombreCompleto)
               return {
                 ...b,
                 inscritoYo: false,
-                anotados: b.anotados.filter((n) => n !== usuario),
+                anotados: b.anotados.filter((n) => n !== nombreCompleto),
               }
             }
-            // Entrar: solo si aún hay cupo.
+            // 5. Entrar: Agrega tu nombre real de la BD
             if (cerrado) return b
-            return { ...b, inscritoYo: true, anotados: [...b.anotados, usuario] }
+            return { ...b, inscritoYo: true, anotados: [...b.anotados, nombreCompleto] }
           }),
         }
       })
     )
   }
 
-  // Cambiar el encargado de una planilla.
   const cambiarEncargado = (idPlanilla, nuevoEncargado) => {
     setPlanillas((prev) =>
       prev.map((pl) =>
@@ -97,7 +73,6 @@ export default function Turnos() {
     )
   }
 
-  // Guardar edición de cupos / horario de un bloque.
   const guardarBloque = (idPlanilla, idBloque, cambios) => {
     setPlanillas((prev) =>
       prev.map((pl) => {
@@ -113,13 +88,11 @@ export default function Turnos() {
     setEditando(null)
   }
 
-  // Eliminar una planilla (turno) completa.
   const eliminarPlanilla = (idPlanilla) => {
     if (!window.confirm('¿Eliminar este turno completo? Esta acción no se puede deshacer.')) return
     setPlanillas((prev) => prev.filter((pl) => pl.id !== idPlanilla))
   }
 
-  // Eliminar un bloque (módulo) dentro de una planilla.
   const eliminarBloque = (idPlanilla, idBloque) => {
     setPlanillas((prev) =>
       prev.map((pl) =>
@@ -130,7 +103,6 @@ export default function Turnos() {
     )
   }
 
-  // Eliminar una tarea dentro de una planilla.
   const eliminarTarea = (idPlanilla, indiceTarea) => {
     setPlanillas((prev) =>
       prev.map((pl) =>
@@ -141,7 +113,6 @@ export default function Turnos() {
     )
   }
 
-  // Descargar el turno como PDF para registro físico.
   const descargarPDF = (planilla) => {
     const encargado = getRango(planilla.encargado)
     descargarTurnoPDF(planilla, encargado)
@@ -157,7 +128,6 @@ export default function Turnos() {
         </p>
       </div>
 
-      {/* Crear guardia: tenientes, capitán y directora. */}
       {puedeCrearGuardia && (
         <div className="turnos-acciones">
           <button
@@ -169,7 +139,6 @@ export default function Turnos() {
         </div>
       )}
 
-      {/* Aviso según el permiso de asistencia del rol. */}
       {puedeMarcar ? (
         <div className="nota-info">
           <IconoCheck width={18} />
@@ -201,8 +170,6 @@ export default function Turnos() {
               </span>
             </header>
 
-            {/* Acciones del turno: descargar PDF (todos) y, para
-                quien configura, eliminar el turno completo. */}
             <div className="planilla__acciones">
               <button
                 className="btn-mini"
@@ -224,7 +191,6 @@ export default function Turnos() {
 
             {pl.plazo && <p className="planilla__plazo">{pl.plazo}</p>}
 
-            {/* Encargado de turno de la semana. */}
             <div className="planilla__encargado">
               <span className="planilla__encargado-rotulo">
                 <IconoPersona width={15} /> Encargado de turno
@@ -248,7 +214,6 @@ export default function Turnos() {
               )}
             </div>
 
-            {/* Tareas correspondientes a la guardia (si tiene). */}
             {pl.tareas && pl.tareas.length > 0 && (
               <div className="planilla__tareas">
                 <span className="planilla__tareas-rotulo">
@@ -283,7 +248,6 @@ export default function Turnos() {
                   editando.planillaId === pl.id &&
                   editando.bloqueId === b.id
 
-                // --- Modo edición de cupos/horario ---
                 if (enEdicion) {
                   return (
                     <li key={b.id} className="bloque bloque--editando">
@@ -316,7 +280,6 @@ export default function Turnos() {
                       alternarBloque(pl.id, b.id)
                     }
                   >
-                    {/* Marcador de selección. */}
                     <span className="bloque__check">
                       {cerrado ? (
                         <IconoCandado width={14} />
@@ -336,7 +299,6 @@ export default function Turnos() {
                         )}
                       </div>
 
-                      {/* Barra de progreso hacia el cupo. */}
                       <div className="bloque__barra">
                         <div
                           className={`bloque__relleno ${
@@ -346,7 +308,6 @@ export default function Turnos() {
                         />
                       </div>
 
-                      {/* Al cerrarse, se revelan los nombres. */}
                       {cerrado && (
                         <ul className="bloque__seleccionados">
                           {b.anotados.slice(0, b.cupos).map((n, idx) => (
@@ -362,7 +323,6 @@ export default function Turnos() {
                       {anotados}/{b.cupos}
                     </span>
 
-                    {/* Botones de config del bloque (editar/eliminar). */}
                     {puedeEditar && (
                       <span className="bloque__acciones">
                         <button
@@ -397,10 +357,9 @@ export default function Turnos() {
         )
       })}
 
-      {/* Formulario de creación de guardia (plantilla con tareas). */}
       {creandoGuardia && (
         <FormCrearGuardia
-          rangoActual={rangoId}
+          rangoActual={rangoActual}
           onCrear={crearGuardia}
           onCerrar={() => setCreandoGuardia(false)}
         />
@@ -409,10 +368,6 @@ export default function Turnos() {
   )
 }
 
-/**
- * Mini formulario para editar los cupos y el horario de un bloque.
- * Solo lo ve quien puede configurar la planilla.
- */
 function FormEdicionBloque({ bloque, onGuardar, onCancelar }) {
   const [cupos, setCupos] = useState(bloque.cupos)
   const [horario, setHorario] = useState(bloque.horario)

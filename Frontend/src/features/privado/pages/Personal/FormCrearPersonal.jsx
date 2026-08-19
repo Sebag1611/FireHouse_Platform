@@ -17,13 +17,17 @@ import {
 
 const TIPOS_SANGRE = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']
 
-export default function FormCrearPersonal({ onGuardar, onCerrar }) {
+export default function FormCrearPersonal({ onGuardar, onCerrar, rutCreador }) {
   // Un solo objeto de estado con todos los campos del formulario.
   const [form, setForm] = useState({
-    nombre: '',
+    nombres: '',
+    apellidos: '',
     rut: '',
     rango: 'bombero',
+    nivel: '',
     telefono: '',
+    correo: '',
+    contraseña: '',
     tipoSangre: 'O+',
     direccion: '',
     nacimiento: '',
@@ -32,6 +36,7 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
     telefonoEmergencia: '',
   })
   const [error, setError] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   // Actualiza un campo del formulario por su nombre.
   const cambiar = (campo, valor) => {
@@ -49,13 +54,49 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
   const salirTelefono = (campo) =>
     setForm((prev) => ({ ...prev, [campo]: formatearTelefono(prev[campo]) }))
 
-  const guardar = () => {
+  const guardar = async () => {
     // Validación mínima de los campos obligatorios.
-    if (!form.nombre.trim() || !form.rut.trim() || !form.telefono.trim()) {
-      setError('Completa al menos nombre, RUT y teléfono.')
+    if (!form.nombres.trim() || !form.apellidos.trim() || !form.rut.trim() || !form.telefono.trim()) {
+      setError('Completa al menos nombres, apellidos, RUT y teléfono.')
       return
     }
-    onGuardar(form)
+
+    setEnviando(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/Administracion/crear-bombero/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rut_creador: rutCreador,
+          rut: form.rut,
+          nombres: form.nombres,
+          apellidos: form.apellidos,
+          telefono: form.telefono,
+          correo: form.correo,
+          contraseña: form.contraseña,
+          direccion: form.direccion,
+          fecha_ingreso: form.ingreso,
+          rango: form.rango,
+          nivel: form.nivel,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Error al crear el bombero.')
+        return
+      }
+
+      onGuardar(data)
+      onCerrar()
+    } catch (e) {
+      setError('No se pudo conectar con el servidor.')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -78,15 +119,23 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
         </div>
 
         <div className="form-personal__grid">
-          <label className="campo-form campo-form--ancho">
-            Nombre completo *
+          <label className="campo-form">
+            Nombres *
             <input
-              value={form.nombre}
-              onChange={(e) => cambiar('nombre', e.target.value)}
-              placeholder="Nombre y apellidos"
+              value={form.nombres}
+              onChange={(e) => cambiar('nombres', e.target.value)}
+              placeholder="Nombres"
             />
           </label>
 
+          <label className="campo-form">
+            Apellidos *
+            <input
+              value={form.apellidos}
+              onChange={(e) => cambiar('apellidos', e.target.value)}
+              placeholder="Apellidos"
+            />
+          </label>
           <label className="campo-form">
             RUT *
             <input
@@ -95,6 +144,23 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
               onBlur={salirRut}
               placeholder="12345678-9"
               maxLength={10}
+            />
+          </label>
+          <label className="campo-form">
+            Correo *
+            <input
+              type="email"
+              value={form.correo}
+              onChange={(e) => cambiar('correo', e.target.value)}
+              placeholder="correo@ejemplo.cl"
+            />
+          </label>
+          <label className="campo-form">
+            Contraseña *
+            <input
+              type="password"
+              value={form.contraseña}
+              onChange={(e) => cambiar('contraseña', e.target.value)}
             />
           </label>
 
@@ -119,33 +185,12 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
             />
           </label>
 
-          <label className="campo-form">
-            Tipo de sangre
-            <select
-              value={form.tipoSangre}
-              onChange={(e) => cambiar('tipoSangre', e.target.value)}
-            >
-              {TIPOS_SANGRE.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </label>
-
           <label className="campo-form campo-form--ancho">
             Dirección
             <input
               value={form.direccion}
               onChange={(e) => cambiar('direccion', e.target.value)}
               placeholder="Calle, número, sector"
-            />
-          </label>
-
-          <label className="campo-form">
-            Fecha de nacimiento
-            <input
-              type="date"
-              value={form.nacimiento}
-              onChange={(e) => cambiar('nacimiento', e.target.value)}
             />
           </label>
 
@@ -157,23 +202,12 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
               onChange={(e) => cambiar('ingreso', e.target.value)}
             />
           </label>
-
           <label className="campo-form">
-            Contacto de emergencia
+            Nivel
             <input
-              value={form.contactoEmergencia}
-              onChange={(e) => cambiar('contactoEmergencia', e.target.value)}
-              placeholder="Nombre"
-            />
-          </label>
-
-          <label className="campo-form">
-            Teléfono de emergencia
-            <input
-              value={form.telefonoEmergencia}
-              onChange={(e) => cambiar('telefonoEmergencia', e.target.value)}
-              onBlur={() => salirTelefono('telefonoEmergencia')}
-              placeholder="+56 9 XXXX XXXX"
+              value={form.nivel}
+              onChange={(e) => cambiar('nivel', e.target.value)}
+              placeholder="Ej: 1, 2, 3..."
             />
           </label>
         </div>
