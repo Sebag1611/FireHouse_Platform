@@ -10,7 +10,6 @@ import {
 } from '../../../../components/ui/Icono'
 import './PanelLayout.css'
 
-// 1. REEMPLAZAMOS LOS PERMISOS FALSOS POR TUS ROLES REALES DE LA BD
 const MENU = [
   // Dashboard lo ven todos, no le ponemos restricción de roles
   { to: ROUTES.PANEL, texto: 'Dashboard', icono: IconoPanel, exacto: true },
@@ -22,7 +21,7 @@ const MENU = [
 ]
 
 export default function PanelLayout({ children }) {
-  // 2. EXTRAEMOS LA DATA REAL DE DJANGO (desde tu nuevo SesionContext)
+  // 2. EXTRAEMOS LA DATA REAL DE DJANGO
   const { rango, nivel, tipo, nombreCompleto, cerrarSesion } = useSesion()
   
   const [menuAbierto, setMenuAbierto] = useState(false)

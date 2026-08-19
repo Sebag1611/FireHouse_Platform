@@ -17,7 +17,6 @@ import {
   Turnos, Comunicados, Postulaciones,
 } from './features/privado/pages'
 
-// YA NO NECESITAMOS ESTO: import { PERMISOS } from './data/roles'
 
 /**
  * ============================================================

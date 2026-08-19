@@ -70,9 +70,6 @@ export default function Acceso() {
       // Guardamos la info de Django en la memoria de React
       iniciarSesion(data)
       
-      // ¡SOLUCIÓN DEL 404! 
-      // Todos van al panel principal. Tu componente RutaProtegida se encargará 
-      // de bloquearles las pantallas internas que no deban ver.
       setTimeout(() => {
         navigate('/panel')
       }, 50)
