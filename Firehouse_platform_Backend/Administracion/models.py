@@ -291,3 +291,111 @@ class RecuperacionContraseña(models.Model):
     def __str__(self):
 
         return f"{self.persona.rut} - {self.codigo}"
+
+class Imagen_Publica(models.Model):
+
+    id_imagen = models.AutoField(primary_key=True)
+
+    imagen = models.ImageField(
+        upload_to="publico/"
+    )
+
+    descripcion = models.CharField(
+        max_length=300
+    )
+
+    fecha_subida = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.descripcion
+
+
+
+class Jornada_Laboral_Bombero(models.Model):
+
+    id_jornada = models.AutoField(
+        primary_key=True
+    )
+
+    bombero = models.ForeignKey(
+        Bombero,
+        on_delete=models.CASCADE,
+        db_column="RUT"
+    )
+
+    dias_trabajo = models.IntegerField()
+
+    dias_libres = models.IntegerField()
+
+    fecha_inicio = models.DateField()
+
+    fecha_fin = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    estado_inicial = models.CharField(
+        max_length=20,
+        choices=[
+            ("TRABAJO", "Trabajando"),
+            ("LIBRE", "Libre"),
+        ],
+        default="TRABAJO"
+    )
+
+    activa = models.BooleanField(
+        default=True
+    )
+
+    def __str__(self):
+
+        return f"{self.bombero} - {self.dias_trabajo}x{self.dias_libres}"
+
+
+class Excepcion_Disponibilidad(models.Model):
+
+    TIPO_EXCEPCION = [
+        ("VACACIONES", "Vacaciones"),
+        ("PERMISO", "Permiso"),
+        ("LICENCIA", "Licencia"),
+        ("VIAJE", "Viaje"),
+        ("NO_DISPONIBLE", "No disponible"),
+    ]
+
+
+    id_excepcion = models.AutoField(
+        primary_key=True
+    )
+
+
+    bombero = models.ForeignKey(
+        Bombero,
+        on_delete=models.CASCADE,
+        db_column="RUT"
+    )
+
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=TIPO_EXCEPCION
+    )
+
+
+    fecha_inicio = models.DateField()
+
+
+    fecha_fin = models.DateField()
+
+
+    descripcion = models.CharField(
+        max_length=300,
+        null=True,
+        blank=True
+    )
+
+
+    def __str__(self):
+
+        return f"{self.bombero} - {self.tipo}"

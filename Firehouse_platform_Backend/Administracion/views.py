@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
+from django.db.models import Q
+from datetime import datetime
 
 # Importaciones propias
 from Administracion.models import *
@@ -991,6 +993,7 @@ def listar_guardias(request):
 # ==========================================
 # TOMAR GUARDIA
 # ==========================================
+
 @api_view(['POST'])
 def tomar_guardia(request):
 
@@ -998,80 +1001,297 @@ def tomar_guardia(request):
 
     id_guardia = request.data.get("id_guardia")
 
-    # Validar datos
+
+    # VALIDAR DATOS
+
     if not rut or not id_guardia:
 
         return Response(
-            {"error": "Debe enviar todos los datos."},
+
+            {
+                "error": "Debe enviar todos los datos."
+            },
+
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Buscar bombero
+
+    # BUSCAR BOMBERO
+
     try:
 
-        persona = Persona.objects.get(rut=rut)
+        persona = Persona.objects.get(
+            rut=rut
+        )
 
-        bombero = Bombero.objects.get(rut=persona)
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
 
     except (Persona.DoesNotExist, Bombero.DoesNotExist):
 
         return Response(
-            {"error": "Bombero no encontrado."},
+
+            {
+                "error": "Bombero no encontrado."
+            },
+
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # Buscar guardia
+
+    # BUSCAR GUARDIA
+
     try:
 
-        guardia = Guardia.objects.get(id_guardia=id_guardia)
+        guardia = Guardia.objects.get(
+            id_guardia=id_guardia
+        )
 
     except Guardia.DoesNotExist:
 
         return Response(
-            {"error": "La guardia no existe."},
+
+            {
+                "error": "La guardia no existe."
+            },
+
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # Verificar estado de la encuesta
+
+    # VERIFICAR ESTADO DE LA ENCUESTA
+
     if guardia.encuesta.estado != "ABIERTA":
 
         return Response(
-            {"error": "La encuesta está cerrada."},
+
+            {
+                "error": "La encuesta está cerrada."
+            },
+
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Verificar estado de la guardia
+
+    # VERIFICAR ESTADO DE LA GUARDIA
+
     if guardia.estado != "ABIERTA":
 
         return Response(
-            {"error": "La guardia está cerrada."},
+
+            {
+                "error": "La guardia está cerrada."
+            },
+
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Verificar inscripción previa
+
+    # ==========================================
+    # VERIFICAR DISPONIBILIDAD DEL BOMBERO
+    # ==========================================
+
+
+    # BUSCAR EXCEPCIONES PARA EL DIA DE LA GUARDIA
+
+    excepcion = Excepcion_Disponibilidad.objects.filter(
+
+        bombero=bombero,
+
+        fecha_inicio__lte=guardia.fecha,
+
+        fecha_fin__gte=guardia.fecha
+
+    ).first()
+
+
+    # SI TIENE UNA EXCEPCION
+
+    if excepcion:
+
+        return Response(
+
+            {
+                "error": "El bombero no está disponible para esta fecha.",
+
+                "tipo": excepcion.tipo,
+
+                "descripcion": excepcion.descripcion
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # BUSCAR JORNADA LABORAL QUE CORRESPONDE A LA FECHA
+
+    jornada = Jornada_Laboral_Bombero.objects.filter(
+
+        bombero=bombero,
+
+        fecha_inicio__lte=guardia.fecha
+
+    ).filter(
+
+        Q(fecha_fin__gte=guardia.fecha) |
+
+        Q(fecha_fin__isnull=True)
+
+    ).order_by(
+
+        "-fecha_inicio"
+
+    ).first()
+
+
+    # SI NO EXISTE JORNADA
+
+    if jornada is None:
+
+        return Response(
+
+            {
+                "error": "El bombero no tiene una jornada laboral registrada para esta fecha."
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # ==========================================
+    # CALCULAR CICLO LABORAL
+    # ==========================================
+
+
+    dias_transcurridos = (
+
+        guardia.fecha -
+
+        jornada.fecha_inicio
+
+    ).days
+
+
+    dias_trabajo = jornada.dias_trabajo
+
+    dias_libres = jornada.dias_libres
+
+
+    total_ciclo = (
+
+        dias_trabajo +
+
+        dias_libres
+
+    )
+
+
+    posicion_ciclo = (
+
+        dias_transcurridos %
+
+        total_ciclo
+
+    )
+
+
+    # ==========================================
+    # DETERMINAR DISPONIBILIDAD
+    # ==========================================
+
+
+    if jornada.estado_inicial == "TRABAJO":
+
+        if posicion_ciclo < dias_trabajo:
+
+            estado = "TRABAJO"
+
+        else:
+
+            estado = "LIBRE"
+
+
+    else:
+
+        if posicion_ciclo < dias_libres:
+
+            estado = "LIBRE"
+
+        else:
+
+            estado = "TRABAJO"
+
+
+    # SI ESTA TRABAJANDO NO PUEDE TOMAR GUARDIA
+
+    if estado == "TRABAJO":
+
+        return Response(
+
+            {
+                "error": "No puede tomar esta guardia porque corresponde a un día de trabajo.",
+
+                "fecha": guardia.fecha,
+
+                "jornada": f"{dias_trabajo}x{dias_libres}",
+
+                "estado": estado
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # ==========================================
+    # VERIFICAR INSCRIPCION PREVIA
+    # ==========================================
+
     if Inscripcion_Guardia.objects.filter(
+
         guardia=guardia,
+
         bombero=bombero
+
     ).exists():
 
         return Response(
-            {"error": "Ya está inscrito en esta guardia."},
+
+            {
+                "error": "Ya está inscrito en esta guardia."
+            },
+
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Verificar cupos
+
+    # ==========================================
+    # VERIFICAR CUPOS
+    # ==========================================
+
     inscritos = Inscripcion_Guardia.objects.filter(
+
         guardia=guardia
+
     ).count()
+
 
     if inscritos >= guardia.cupos:
 
         return Response(
-            {"error": "No quedan cupos disponibles."},
+
+            {
+                "error": "No quedan cupos disponibles."
+            },
+
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Crear inscripción
+
+    # ==========================================
+    # CREAR INSCRIPCION
+    # ==========================================
+
     Inscripcion_Guardia.objects.create(
 
         guardia=guardia,
@@ -1080,13 +1300,21 @@ def tomar_guardia(request):
 
     )
 
+
     return Response(
 
-        {"mensaje": "Guardia tomada correctamente."},
+        {
+            "mensaje": "Guardia tomada correctamente.",
+
+            "fecha": guardia.fecha,
+
+            "estado": estado,
+
+            "jornada": f"{dias_trabajo}x{dias_libres}"
+        },
 
         status=status.HTTP_201_CREATED
     )
-
 
 # ==========================================
 # CANCELAR INSCRIPCIÓN A UNA GUARDIA
@@ -1159,3 +1387,1179 @@ def cancelar_guardia(request):
 
         status=status.HTTP_200_OK
     )
+
+# CAMBIAR ESTADO DE UN BOMBERO
+# Solo Director o Capitán pueden activar/desactivar un bombero
+
+@api_view(['PUT'])
+def cambiar_estado_bombero(request):
+
+    rut_solicitante = request.data.get('rut_solicitante')
+    rut_bombero = request.data.get('rut_bombero')
+    estado = request.data.get('estado')
+
+
+    if not rut_solicitante or not rut_bombero or estado is None:
+
+        return Response(
+
+            {
+                "error": "Debe completar todos los campos"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    if not validar_rut(rut_solicitante):
+
+        return Response(
+
+            {
+                "error": "RUT del solicitante inválido"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    if not validar_rut(rut_bombero):
+
+        return Response(
+
+            {
+                "error": "RUT del bombero inválido"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    if not tiene_permiso_administrativo(rut_solicitante):
+
+        return Response(
+
+            {
+                "error": "No tiene permisos para realizar esta acción"
+            },
+
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+
+    try:
+
+        persona = Persona.objects.get(
+            rut=rut_bombero
+        )
+
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
+
+
+        bombero.estado = estado
+        bombero.save()
+
+
+        return Response(
+
+            {
+                "mensaje": "Estado actualizado correctamente"
+            },
+
+            status=status.HTTP_200_OK
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "El usuario no es un bombero"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+# ==========================================
+# LISTAR BOMBEROS DISPONIBLES PARA UNA GUARDIA
+# ==========================================
+
+@api_view(['GET'])
+def listar_bomberos_disponibles_guardia(request, id_guardia):
+
+    # BUSCAR GUARDIA
+
+    try:
+
+        guardia = Guardia.objects.get(
+            id_guardia=id_guardia
+        )
+
+    except Guardia.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "La guardia no existe."
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    # OBTENER TODOS LOS BOMBEROS ACTIVOS
+
+    bomberos = Bombero.objects.filter(
+        estado=True
+    )
+
+
+    disponibles = []
+
+
+    # ==========================================
+    # REVISAR CADA BOMBERO
+    # ==========================================
+
+    for bombero in bomberos:
+
+        # ==========================================
+        # BUSCAR EXCEPCION
+        # ==========================================
+
+        excepcion = Excepcion_Disponibilidad.objects.filter(
+
+            bombero=bombero,
+
+            fecha_inicio__lte=guardia.fecha,
+
+            fecha_fin__gte=guardia.fecha
+
+        ).first()
+
+
+        # SI TIENE EXCEPCION NO ESTA DISPONIBLE
+
+        if excepcion:
+
+            continue
+
+
+        # ==========================================
+        # BUSCAR JORNADA
+        # ==========================================
+
+        jornada = Jornada_Laboral_Bombero.objects.filter(
+
+            bombero=bombero,
+
+            fecha_inicio__lte=guardia.fecha
+
+        ).filter(
+
+            Q(fecha_fin__gte=guardia.fecha) |
+
+            Q(fecha_fin__isnull=True)
+
+        ).order_by(
+
+            "-fecha_inicio"
+
+        ).first()
+
+
+        # SI NO TIENE JORNADA
+
+        if jornada is None:
+
+            continue
+
+
+        # ==========================================
+        # CALCULAR CICLO
+        # ==========================================
+
+        dias_transcurridos = (
+
+            guardia.fecha -
+
+            jornada.fecha_inicio
+
+        ).days
+
+
+        dias_trabajo = jornada.dias_trabajo
+
+        dias_libres = jornada.dias_libres
+
+
+        total_ciclo = (
+
+            dias_trabajo +
+
+            dias_libres
+
+        )
+
+
+        posicion_ciclo = (
+
+            dias_transcurridos %
+
+            total_ciclo
+
+        )
+
+
+        # ==========================================
+        # DETERMINAR ESTADO
+        # ==========================================
+
+        if jornada.estado_inicial == "TRABAJO":
+
+            if posicion_ciclo < dias_trabajo:
+
+                estado = "TRABAJO"
+
+            else:
+
+                estado = "LIBRE"
+
+
+        else:
+
+            if posicion_ciclo < dias_libres:
+
+                estado = "LIBRE"
+
+            else:
+
+                estado = "TRABAJO"
+
+
+        # ==========================================
+        # SOLO AGREGAR BOMBEROS LIBRES
+        # ==========================================
+
+        if estado == "LIBRE":
+
+            # VERIFICAR SI YA ESTA INSCRITO
+
+            inscrito = Inscripcion_Guardia.objects.filter(
+
+                guardia=guardia,
+
+                bombero=bombero
+
+            ).exists()
+
+
+            # SERIALIZAR BOMBERO
+
+            serializer = BomberoSerializer(
+                bombero
+            )
+
+
+            disponibles.append({
+
+                "bombero": serializer.data,
+
+                "jornada": f"{dias_trabajo}x{dias_libres}",
+
+                "estado": estado,
+
+                "inscrito": inscrito
+
+            })
+
+
+    # ==========================================
+    # RESPUESTA
+    # ==========================================
+
+    return Response(
+
+        {
+            "guardia": {
+
+                "id_guardia": guardia.id_guardia,
+
+                "fecha": guardia.fecha,
+
+                "tipo": guardia.tipo,
+
+                "numero": guardia.numero
+
+            },
+
+            "cantidad_disponibles": len(disponibles),
+
+            "bomberos": disponibles
+        },
+
+        status=status.HTTP_200_OK
+    )
+
+
+
+
+# CREAR JORNADA LABORAL DEL BOMBERO
+
+@api_view(['POST'])
+def crear_jornada_laboral(request):
+
+    rut = request.data.get('rut')
+
+    dias_trabajo = request.data.get('dias_trabajo')
+
+    dias_libres = request.data.get('dias_libres')
+
+    fecha_inicio = request.data.get('fecha_inicio')
+
+    estado_inicial = request.data.get('estado_inicial')
+
+
+    # VALIDAR CAMPOS OBLIGATORIOS
+
+    if not rut or not dias_trabajo or not dias_libres or not fecha_inicio or not estado_inicial:
+
+        return Response(
+
+            {
+                "error": "Debe completar todos los campos"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # VALIDAR QUE LOS DIAS SEAN NUMEROS
+
+    try:
+
+        dias_trabajo = int(dias_trabajo)
+
+        dias_libres = int(dias_libres)
+
+
+    except (ValueError, TypeError):
+
+        return Response(
+
+            {
+                "error": "Los días de trabajo y días libres deben ser números"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # VALIDAR QUE LOS DIAS SEAN MAYORES A 0
+
+    if dias_trabajo <= 0 or dias_libres <= 0:
+
+        return Response(
+
+            {
+                "error": "Los días de trabajo y días libres deben ser mayores a 0"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    try:
+
+        # BUSCAR BOMBERO
+
+        persona = Persona.objects.get(
+            rut=rut
+        )
+
+
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
+
+
+        # BUSCAR JORNADA ACTUAL
+
+        jornada_actual = Jornada_Laboral_Bombero.objects.filter(
+
+            bombero=bombero,
+            activa=True
+
+        ).order_by("-fecha_inicio").first()
+
+
+        # SI EXISTE UNA JORNADA ACTIVA
+
+        if jornada_actual:
+
+            return Response(
+
+                {
+                    "error": "El bombero ya tiene una jornada laboral activa"
+                },
+
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+        # CREAR JORNADA
+
+        jornada = Jornada_Laboral_Bombero.objects.create(
+
+            bombero=bombero,
+
+            dias_trabajo=dias_trabajo,
+
+            dias_libres=dias_libres,
+
+            fecha_inicio=fecha_inicio,
+
+            estado_inicial=estado_inicial,
+
+            activa=True
+        )
+
+
+        serializer = Jornada_Laboral_BomberoSerializer(
+            jornada
+        )
+
+
+        return Response(
+
+            {
+                "mensaje": "Jornada laboral creada correctamente",
+
+                "jornada": serializer.data
+            },
+
+            status=status.HTTP_201_CREATED
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Bombero no encontrado"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+# LISTAR JORNADAS LABORALES DEL BOMBERO
+
+@api_view(['GET'])
+def listar_jornadas_bombero(request, rut):
+
+    try:
+
+        # BUSCAR PERSONA
+
+        persona = Persona.objects.get(
+            rut=rut
+        )
+
+
+        # BUSCAR BOMBERO
+
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
+
+
+        # OBTENER TODAS LAS JORNADAS
+
+        jornadas = Jornada_Laboral_Bombero.objects.filter(
+
+            bombero=bombero
+
+        ).order_by("-fecha_inicio")
+
+
+        serializer = Jornada_Laboral_BomberoSerializer(
+
+            jornadas,
+
+            many=True
+        )
+
+
+        return Response(
+
+            serializer.data,
+
+            status=status.HTTP_200_OK
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Bombero no encontrado"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+# CAMBIAR JORNADA LABORAL DEL BOMBERO
+
+@api_view(['PUT'])
+def cambiar_jornada_laboral(request):
+
+    rut = request.data.get('rut')
+
+    dias_trabajo = request.data.get('dias_trabajo')
+
+    dias_libres = request.data.get('dias_libres')
+
+    fecha_inicio = request.data.get('fecha_inicio')
+
+    estado_inicial = request.data.get('estado_inicial')
+
+
+    # VALIDAR CAMPOS
+
+    if not rut or not dias_trabajo or not dias_libres or not fecha_inicio or not estado_inicial:
+
+        return Response(
+
+            {
+                "error": "Debe completar todos los campos"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # VALIDAR DIAS
+
+    try:
+
+        dias_trabajo = int(dias_trabajo)
+
+        dias_libres = int(dias_libres)
+
+
+    except (ValueError, TypeError):
+
+        return Response(
+
+            {
+                "error": "Los días de trabajo y días libres deben ser números"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    if dias_trabajo <= 0 or dias_libres <= 0:
+
+        return Response(
+
+            {
+                "error": "Los días de trabajo y días libres deben ser mayores a 0"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # CONVERTIR FECHA
+
+    try:
+
+        fecha_inicio_convertida = datetime.strptime(
+
+            fecha_inicio,
+
+            "%Y-%m-%d"
+
+        ).date()
+
+
+    except ValueError:
+
+        return Response(
+
+            {
+                "error": "Formato de fecha inválido. Use YYYY-MM-DD"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    try:
+
+        # BUSCAR PERSONA
+
+        persona = Persona.objects.get(
+            rut=rut
+        )
+
+
+        # BUSCAR BOMBERO
+
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
+
+
+        # BUSCAR JORNADA ACTUAL
+
+        jornada_actual = Jornada_Laboral_Bombero.objects.filter(
+
+            bombero=bombero,
+
+            activa=True
+
+        ).order_by("-fecha_inicio").first()
+
+
+        # CERRAR JORNADA ANTERIOR
+
+        if jornada_actual:
+
+            # VALIDAR QUE LA NUEVA FECHA SEA POSTERIOR
+
+            if fecha_inicio_convertida <= jornada_actual.fecha_inicio:
+
+                return Response(
+
+                    {
+                        "error": "La nueva jornada debe comenzar después de la jornada actual"
+                    },
+
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+
+            jornada_actual.fecha_fin = (
+
+                fecha_inicio_convertida -
+
+                timedelta(days=1)
+
+            )
+
+            jornada_actual.activa = False
+
+            jornada_actual.save()
+
+
+        # CREAR NUEVA JORNADA
+
+        nueva_jornada = Jornada_Laboral_Bombero.objects.create(
+
+            bombero=bombero,
+
+            dias_trabajo=dias_trabajo,
+
+            dias_libres=dias_libres,
+
+            fecha_inicio=fecha_inicio_convertida,
+
+            estado_inicial=estado_inicial,
+
+            activa=True
+        )
+
+
+        serializer = Jornada_Laboral_BomberoSerializer(
+
+            nueva_jornada
+        )
+
+
+        return Response(
+
+            {
+                "mensaje": "Jornada laboral actualizada correctamente",
+
+                "jornada": serializer.data
+            },
+
+            status=status.HTTP_200_OK
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Bombero no encontrado"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+# CREAR EXCEPCION DE DISPONIBILIDAD
+
+@api_view(['POST'])
+def crear_excepcion_disponibilidad(request):
+
+    rut = request.data.get('rut')
+
+    tipo = request.data.get('tipo')
+
+    fecha_inicio = request.data.get('fecha_inicio')
+
+    fecha_fin = request.data.get('fecha_fin')
+
+    descripcion = request.data.get('descripcion')
+
+
+    # VALIDAR CAMPOS OBLIGATORIOS
+
+    if not rut or not tipo or not fecha_inicio or not fecha_fin:
+
+        return Response(
+
+            {
+                "error": "Debe completar todos los campos obligatorios"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    try:
+
+        # BUSCAR PERSONA
+
+        persona = Persona.objects.get(
+            rut=rut
+        )
+
+
+        # BUSCAR BOMBERO
+
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
+
+
+        # CREAR EXCEPCION
+
+        excepcion = Excepcion_Disponibilidad.objects.create(
+
+            bombero=bombero,
+
+            tipo=tipo,
+
+            fecha_inicio=fecha_inicio,
+
+            fecha_fin=fecha_fin,
+
+            descripcion=descripcion
+        )
+
+
+        serializer = Excepcion_DisponibilidadSerializer(
+
+            excepcion
+        )
+
+
+        return Response(
+
+            {
+                "mensaje": "Excepción registrada correctamente",
+
+                "excepcion": serializer.data
+            },
+
+            status=status.HTTP_201_CREATED
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Bombero no encontrado"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+# LISTAR EXCEPCIONES DE DISPONIBILIDAD
+
+@api_view(['GET'])
+def listar_excepciones_bombero(request, rut):
+
+    try:
+
+        # BUSCAR PERSONA
+
+        persona = Persona.objects.get(
+            rut=rut
+        )
+
+
+        # BUSCAR BOMBERO
+
+        bombero = Bombero.objects.get(
+            rut=persona
+        )
+
+
+        # OBTENER EXCEPCIONES
+
+        excepciones = Excepcion_Disponibilidad.objects.filter(
+
+            bombero=bombero
+
+        ).order_by("-fecha_inicio")
+
+
+        serializer = Excepcion_DisponibilidadSerializer(
+
+            excepciones,
+
+            many=True
+        )
+
+
+        return Response(
+
+            serializer.data,
+
+            status=status.HTTP_200_OK
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Bombero no encontrado"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+# CONSULTAR DISPONIBILIDAD DEL BOMBERO EN UNA FECHA
+
+@api_view(['GET'])
+def consultar_disponibilidad_bombero(request, rut, fecha):
+
+    try:
+
+        # CONVERTIR LA FECHA RECIBIDA
+
+        fecha_consulta = datetime.strptime(
+
+            fecha,
+
+            "%Y-%m-%d"
+
+        ).date()
+
+
+    except ValueError:
+
+        return Response(
+
+            {
+                "error": "Formato de fecha inválido. Use YYYY-MM-DD"
+            },
+
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    try:
+
+        # BUSCAR PERSONA
+
+        persona = Persona.objects.get(
+
+            rut=rut
+
+        )
+
+
+        # BUSCAR BOMBERO
+
+        bombero = Bombero.objects.get(
+
+            rut=persona
+
+        )
+
+
+        # BUSCAR SI EXISTE UNA EXCEPCION PARA ESA FECHA
+
+        excepcion = Excepcion_Disponibilidad.objects.filter(
+
+            bombero=bombero,
+
+            fecha_inicio__lte=fecha_consulta,
+
+            fecha_fin__gte=fecha_consulta
+
+        ).first()
+
+
+        # SI EXISTE UNA EXCEPCION
+
+        if excepcion:
+
+            return Response(
+
+                {
+                    "fecha": fecha_consulta,
+
+                    "estado": excepcion.tipo,
+
+                    "descripcion": excepcion.descripcion,
+
+                    "puede_tomar_guardia": False
+                },
+
+                status=status.HTTP_200_OK
+            )
+
+
+        # BUSCAR LA JORNADA LABORAL QUE CORRESPONDE A ESA FECHA
+
+        jornada = Jornada_Laboral_Bombero.objects.filter(
+
+            bombero=bombero,
+
+            fecha_inicio__lte=fecha_consulta
+
+        ).filter(
+
+            Q(fecha_fin__gte=fecha_consulta) |
+
+            Q(fecha_fin__isnull=True)
+
+        ).order_by(
+
+            "-fecha_inicio"
+
+        ).first()
+
+
+        # SI NO EXISTE JORNADA PARA ESA FECHA
+
+        if jornada is None:
+
+            return Response(
+
+                {
+                    "error": "No existe una jornada laboral registrada para esta fecha"
+                },
+
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+        # CALCULAR LOS DIAS DESDE EL INICIO DE LA JORNADA
+
+        dias_transcurridos = (
+
+            fecha_consulta -
+
+            jornada.fecha_inicio
+
+        ).days
+
+
+        # OBTENER DIAS DE TRABAJO Y DIAS LIBRES
+
+        dias_trabajo = jornada.dias_trabajo
+
+        dias_libres = jornada.dias_libres
+
+
+        # CALCULAR EL TOTAL DEL CICLO
+
+        total_ciclo = (
+
+            dias_trabajo +
+
+            dias_libres
+
+        )
+
+
+        # OBTENER LA POSICION DEL DIA DENTRO DEL CICLO
+
+        posicion_ciclo = (
+
+            dias_transcurridos %
+
+            total_ciclo
+
+        )
+
+
+        # DETERMINAR SI EL BOMBERO ESTA TRABAJANDO O LIBRE
+
+        if jornada.estado_inicial == "TRABAJO":
+
+            if posicion_ciclo < dias_trabajo:
+
+                estado = "TRABAJO"
+
+                puede_tomar_guardia = False
+
+            else:
+
+                estado = "LIBRE"
+
+                puede_tomar_guardia = True
+
+
+        else:
+
+            if posicion_ciclo < dias_libres:
+
+                estado = "LIBRE"
+
+                puede_tomar_guardia = True
+
+            else:
+
+                estado = "TRABAJO"
+
+                puede_tomar_guardia = False
+
+
+        # RETORNAR LA DISPONIBILIDAD
+
+        return Response(
+
+            {
+                "fecha": fecha_consulta,
+
+                "estado": estado,
+
+                "dias_trabajo": dias_trabajo,
+
+                "dias_libres": dias_libres,
+
+                "jornada": f"{dias_trabajo}x{dias_libres}",
+
+                "fecha_inicio_jornada": jornada.fecha_inicio,
+
+                "puede_tomar_guardia": puede_tomar_guardia
+            },
+
+            status=status.HTTP_200_OK
+        )
+
+
+    except Persona.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Persona no encontrada"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    except Bombero.DoesNotExist:
+
+        return Response(
+
+            {
+                "error": "Bombero no encontrado"
+            },
+
+            status=status.HTTP_404_NOT_FOUND
+        )
