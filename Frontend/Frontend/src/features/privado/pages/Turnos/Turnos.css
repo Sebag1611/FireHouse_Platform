@@ -1,0 +1,667 @@
+/* ============================================================
+   Turnos · Planillas de asistencia (estilo votación)
+   ============================================================ */
+
+.planilla {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 24px;
+  margin-bottom: 22px;
+}
+
+.planilla__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.planilla__head h2 {
+  font-size: 1.25rem;
+  margin-bottom: 6px;
+}
+
+.planilla__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gris);
+  font-size: 0.9rem;
+}
+
+.planilla__tag {
+  font-family: var(--display);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.planilla__tag--diurno {
+  color: var(--servicio);
+  background: color-mix(in srgb, var(--servicio) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--servicio) 35%, transparent);
+}
+
+.planilla__tag--nocturno {
+  color: var(--verde-claro);
+  background: color-mix(in srgb, var(--verde-claro) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde-claro) 35%, transparent);
+}
+
+.planilla__plazo {
+  color: var(--gris-tenue);
+  font-size: 0.86rem;
+  margin-bottom: 18px;
+}
+
+/* --- Lista de bloques --- */
+.bloques {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bloque {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: var(--radio-sm);
+  transition: background var(--transicion);
+}
+
+.bloque--marcable {
+  cursor: pointer;
+}
+
+.bloque--marcable:hover {
+  background: var(--carbon-2);
+}
+
+/* Marcador circular a la izquierda (vacío o con check). */
+.bloque__check {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+  transition: var(--transicion);
+}
+
+.bloque__check i {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--gris-tenue);
+}
+
+.bloque--mio .bloque__check {
+  background: var(--verde);
+}
+
+.bloque__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bloque__titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+
+.bloque__dia {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--humo);
+}
+
+.bloque__horario {
+  font-size: 0.86rem;
+  color: var(--gris-tenue);
+}
+
+/* Barra proporcional de anotados (como la votación). */
+.bloque__barra {
+  height: 7px;
+  background: var(--carbon);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bloque__relleno {
+  height: 100%;
+  background: var(--verde-claro);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+
+.bloque--mio .bloque__relleno {
+  background: var(--verde);
+}
+
+.bloque__conteo {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--humo);
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .planilla {
+    padding: 18px;
+  }
+  .bloque {
+    gap: 10px;
+  }
+}
+
+/* ---------- Encargado de turno ---------- */
+.planilla__encargado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+
+.planilla__encargado-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+}
+
+.planilla__encargado-nombre {
+  font-family: var(--display);
+  font-size: 1rem;
+  color: var(--verde-claro);
+}
+
+.planilla__encargado-select {
+  background: var(--superficie);
+  border: 1px solid var(--verde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  padding: 8px 12px;
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+}
+
+.planilla__encargado-select:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+/* ---------- Bloque cerrado / completo ---------- */
+.bloque--cerrado {
+  cursor: default;
+  opacity: 0.96;
+}
+
+.bloque--cerrado .bloque__check {
+  background: var(--gris-tenue);
+}
+
+.bloque__cerrado-tag {
+  font-family: var(--display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+  background: var(--carbon);
+  border: 1px solid var(--borde);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.bloque__relleno--lleno {
+  background: var(--gris-tenue);
+}
+
+/* Nombres revelados al cerrarse el bloque. */
+.bloque__seleccionados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 10px;
+}
+
+.bloque__seleccionados li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.84rem;
+  color: var(--gris);
+}
+
+.bloque__seleccionados li svg {
+  color: var(--verde-claro);
+}
+
+/* ---------- Botón editar bloque ---------- */
+.bloque__editar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris);
+  transition: var(--transicion);
+}
+
+.bloque__editar:hover {
+  border-color: var(--verde-claro);
+  color: var(--verde-claro);
+}
+
+/* ---------- Formulario de edición de bloque ---------- */
+.bloque--editando {
+  display: block;
+  background: var(--carbon-2);
+  border: 1px solid var(--verde);
+  border-radius: var(--radio-sm);
+  padding: 16px;
+  cursor: default;
+}
+
+.edicion-bloque__campos {
+  display: grid;
+  grid-template-columns: 1.3fr 1.3fr 0.8fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.edicion-bloque__campos label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--display);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+}
+
+.edicion-bloque__campos input {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.94rem;
+  padding: 9px 12px;
+  border-radius: var(--radio-sm);
+}
+
+.edicion-bloque__campos input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.edicion-bloque__campos input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edicion-bloque__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 620px) {
+  .edicion-bloque__campos {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Botón de acciones (crear guardia) ---------- */
+.turnos-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+/* ---------- Tareas de la guardia (en la planilla) ---------- */
+.planilla__tareas {
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.planilla__tareas-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rojo-claro);
+  margin-bottom: 10px;
+}
+
+.planilla__tareas ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planilla__tareas li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  color: var(--gris);
+}
+
+.planilla__tareas li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--verde-claro);
+}
+
+/* ---------- Formulario crear guardia ---------- */
+.form-guardia {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sombra);
+  animation: subir 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.form-guardia__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.form-guardia__head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+}
+
+.form-guardia__cerrar {
+  color: var(--gris);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-sm);
+  transition: var(--transicion);
+}
+
+.form-guardia__cerrar:hover {
+  background: var(--carbon-2);
+  color: var(--rojo-claro);
+}
+
+.form-guardia__body {
+  padding: 22px 24px;
+  overflow-y: auto;
+}
+
+.form-guardia__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.form-guardia__seccion {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--superficie-2);
+}
+
+.form-guardia__seccion-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.form-guardia__seccion-head h3 {
+  font-size: 1.02rem;
+}
+
+/* Fila de bloque */
+.guardia-bloque {
+  display: grid;
+  grid-template-columns: 1.4fr 1.4fr 0.7fr auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.guardia-bloque input {
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  border-radius: var(--radio-sm);
+}
+
+.guardia-bloque input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.guardia-bloque__quitar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris-tenue);
+  transition: var(--transicion);
+}
+
+.guardia-bloque__quitar:hover {
+  border-color: var(--rojo);
+  color: var(--rojo-claro);
+}
+
+/* Tareas */
+.guardia-tareas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.guardia-tareas li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+  color: var(--gris-tenue);
+}
+
+.guardia-tareas li.guardia-tarea--on {
+  color: var(--humo);
+}
+
+.guardia-tarea__check {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--borde);
+  color: #fff;
+  transition: var(--transicion);
+}
+
+.guardia-tarea--on .guardia-tarea__check {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+
+.guardia-tarea__check i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.guardia-tarea-nueva {
+  display: flex;
+  gap: 10px;
+}
+
+.guardia-tarea-nueva input {
+  flex: 1;
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  color: var(--humo);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  border-radius: var(--radio-sm);
+}
+
+.guardia-tarea-nueva input:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.form-guardia__error {
+  color: var(--rojo-claro);
+  font-size: 0.9rem;
+  margin-top: 14px;
+}
+
+.form-guardia__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--borde);
+}
+
+@media (max-width: 560px) {
+  .form-guardia__grid {
+    grid-template-columns: 1fr;
+  }
+  .guardia-bloque {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  .guardia-bloque__dia {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Acciones del turno (descargar/eliminar) ---------- */
+.planilla__acciones {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* Botón mini variante peligro (eliminar) */
+.btn-mini--peligro {
+  border-color: color-mix(in srgb, var(--rojo) 40%, transparent);
+  color: var(--rojo-claro);
+}
+
+.btn-mini--peligro:hover {
+  border-color: var(--rojo);
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  color: var(--rojo-claro);
+}
+
+/* Botón quitar tarea */
+.planilla__tareas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.planilla__tarea-quitar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--gris-tenue);
+  flex-shrink: 0;
+  transition: var(--transicion);
+}
+
+.planilla__tarea-quitar:hover {
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  color: var(--rojo-claro);
+}
+
+/* Acciones del bloque (editar + eliminar) */
+.bloque__acciones {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bloque__eliminar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris-tenue);
+  transition: var(--transicion);
+}
+
+.bloque__eliminar:hover {
+  border-color: var(--rojo);
+  color: var(--rojo-claro);
+}

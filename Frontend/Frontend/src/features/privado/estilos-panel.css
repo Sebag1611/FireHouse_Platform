@@ -1,0 +1,259 @@
+/* Estilos compartidos por las vistas internas del panel */
+
+.vista-head {
+  margin-bottom: 28px;
+}
+
+.vista-head h1 {
+  font-size: 1.9rem;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: inline-block;
+  border-bottom: 3px solid var(--rojo);
+  padding-bottom: 4px;
+}
+
+.vista-head p {
+  color: var(--gris-tenue);
+  font-size: 0.95rem;
+}
+
+/* Tarjetas de estadística (dashboard) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 22px;
+}
+
+.stat-card__valor {
+  font-family: var(--display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--humo);
+  line-height: 1;
+}
+
+.stat-card__label {
+  color: var(--gris-tenue);
+  font-size: 0.88rem;
+  margin-top: 6px;
+}
+
+.stat-card--verde { border-left: 3px solid var(--verde-claro); }
+.stat-card--ambar { border-left: 3px solid var(--servicio); }
+.stat-card--rojo { border-left: 3px solid var(--rojo); }
+.stat-card--claro { border-left: 3px solid var(--disponible); }
+
+/* Panel/caja genérica */
+.panel-box {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 24px;
+  margin-bottom: 22px;
+}
+
+.panel-box__titulo {
+  font-size: 1.15rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--rojo);
+}
+
+/* Tabla del panel */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th {
+  text-align: left;
+  font-family: var(--display);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.tabla td {
+  padding: 14px;
+  border-bottom: 1px solid var(--superficie-2);
+  font-size: 0.94rem;
+  color: var(--gris);
+}
+
+.tabla tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tr:hover td {
+  background: var(--carbon-2);
+}
+
+.tabla__nombre {
+  color: var(--humo);
+  font-weight: 500;
+}
+
+/* Chip de rango/nivel */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--display);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--c, var(--gris));
+  background: color-mix(in srgb, var(--c, var(--gris)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c, var(--gris)) 32%, transparent);
+}
+
+/* Botón pequeño de acción en tablas */
+.btn-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--display);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris);
+  transition: var(--transicion);
+}
+
+.btn-mini:hover {
+  border-color: var(--verde-claro);
+  color: var(--verde-claro);
+}
+
+.btn-mini--primario {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: #fff;
+}
+.btn-mini--primario:hover {
+  background: var(--verde-osc);
+  color: #fff;
+}
+
+/* Aviso de "sin permiso" */
+.sin-permiso {
+  background: var(--superficie);
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio);
+  padding: 48px 32px;
+  text-align: center;
+  color: var(--gris-tenue);
+  max-width: 520px;
+  margin: 40px auto;
+}
+
+.sin-permiso svg {
+  color: var(--gris-tenue);
+  margin-bottom: 14px;
+}
+
+.sin-permiso h2 {
+  color: var(--gris);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  text-transform: none;
+}
+
+/* Nota informativa */
+.nota-info {
+  display: flex;
+  gap: 10px;
+  background: rgba(46, 157, 104, 0.08);
+  border: 1px solid rgba(46, 157, 104, 0.25);
+  border-radius: var(--radio-sm);
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--gris);
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .tabla-scroll {
+    overflow-x: auto;
+  }
+  .tabla {
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 520px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dashboard: grid de dos columnas */
+.panel-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.mini-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--superficie-2);
+}
+.mini-fila:last-child { border-bottom: none; }
+
+.mini-fila strong {
+  display: block;
+  color: var(--humo);
+  font-size: 0.94rem;
+  font-weight: 500;
+}
+
+.mini-fila span {
+  color: var(--gris-tenue);
+  font-size: 0.82rem;
+}
+
+.mini-fila time {
+  color: var(--gris-tenue);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.cupos-mini {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--servicio);
+  white-space: nowrap;
+}
+
+@media (max-width: 820px) {
+  .panel-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

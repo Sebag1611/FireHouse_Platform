@@ -1,0 +1,139 @@
+/**
+ * ============================================================
+ *  UTILIDADES · Clases reutilizables en todo el sitio
+ * ============================================================
+ *  Clases genéricas que se repiten en muchas vistas: el
+ *  contenedor centrado, los botones, los títulos de sección.
+ *
+ *  ¿Por qué separarlas?
+ *  Son piezas de estilo transversales que no pertenecen a un
+ *  componente en concreto. Tenerlas juntas evita duplicar el
+ *  mismo CSS (por ejemplo, el estilo de botón) en cada página.
+ * ============================================================
+ */
+
+/* Contenedor centrado con ancho máximo. Envuelve el contenido
+   de cada sección para que no se estire en pantallas anchas. */
+.contenedor {
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Espaciado vertical estándar de una sección de página. */
+.seccion {
+  padding: 88px 0;
+}
+
+/* --- Encabezado de sección (eyebrow + título + subtítulo) --- */
+
+/* "Eyebrow": pequeño rótulo sobre el título, con una línea
+   corta a la izquierda. Da jerarquía visual a las secciones. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rojo);
+  margin-bottom: 16px;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 3px;
+  background: var(--rojo);
+}
+
+/* Título grande de sección. clamp() lo hace responsivo:
+   crece con la pantalla pero con un mínimo y un máximo. */
+.titulo-seccion {
+  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.subtitulo-seccion {
+  color: var(--gris);
+  max-width: 60ch;
+  font-size: 1.02rem;
+}
+
+/* --- Botones --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 13px 26px;
+  border-radius: var(--radio-sm);
+  transition: var(--transicion);
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+}
+
+/* Botón principal: acción destacada (verde sólido). */
+.btn-primario {
+  background: var(--verde);
+  color: #fff;
+  box-shadow: var(--sombra-verde);
+}
+
+.btn-primario:hover {
+  background: var(--verde-osc);
+  transform: translateY(-2px);
+}
+
+/* Botón secundario: acción alternativa (solo borde). */
+.btn-fantasma {
+  border-color: var(--borde);
+  color: var(--humo);
+}
+
+.btn-fantasma:hover {
+  border-color: var(--verde);
+  color: var(--verde-claro);
+}
+
+/* Botón de acento rojo: para acciones destacadas (postular, alertas,
+   llamados a la acción de emergencia). Da identidad bomberil. */
+.btn-rojo {
+  background: var(--rojo);
+  color: #fff;
+  box-shadow: 0 12px 40px rgba(193, 39, 45, 0.28);
+}
+
+.btn-rojo:hover {
+  background: var(--rojo-osc);
+  transform: translateY(-2px);
+}
+
+/* --- Firma visual: cinta diagonal tipo "peligro" --- */
+.cinta-peligro {
+  height: 6px;
+  width: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--rojo) 0 18px,
+    var(--verde) 18px 36px
+  );
+  opacity: 0.9;
+}
+
+/* Ajuste responsivo del espaciado de sección en móvil. */
+@media (max-width: 720px) {
+  .seccion {
+    padding: 60px 0;
+  }
+}
