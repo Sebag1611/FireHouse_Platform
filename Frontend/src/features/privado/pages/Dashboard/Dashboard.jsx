@@ -1,12 +1,11 @@
-import { useSesion } from '../../context'
+import { useSesion } from '../../context/SesionContext' 
 import { resumenPanel, comunicados, planillasTurno } from '../../../../data/personal'
-import { PERMISOS } from '../../../../data/roles'
 import { IconoGrupo, IconoCamion, IconoCalendario, IconoBandeja } from '../../../../components/ui/Icono'
 import EmergenciasResumen from '../../../../components/ui/EmergenciasResumen'
 import '../../estilos-panel.css'
 
 export default function Dashboard() {
-  const { usuario, rango, nivel, puede } = useSesion()
+  const { nombreCompleto, rango, nivel, tipo } = useSesion()
 
   const stats = [
     { valor: resumenPanel.bomberosActivos, label: 'Bomberos activos', clase: 'stat-card--verde', icono: IconoGrupo },
@@ -15,16 +14,20 @@ export default function Dashboard() {
     { valor: resumenPanel.postulacionesPendientes, label: 'Postulaciones pendientes', clase: 'stat-card--rojo', icono: IconoBandeja },
   ]
 
-  // Toma solo el primer nombre de la persona para el saludo.
-  const primerNombre = usuario.split(' ')[0]
+  const primerNombre = nombreCompleto ? nombreCompleto.split(' ')[0] : 'Bombero'
+  const etiquetaCargo = rango || tipo || 'Sin Rango'
+  const etiquetaNivel = nivel ? ` · ${nivel}` : ''
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  const puedeVerComunicados = ['capitán', 'capitan', 'director', 'teniente'].includes(rangoActual) || ['capitán', 'capitan', 'director', 'teniente'].includes(tipoActual)
+  const puedeVerTurnos = ['capitán', 'capitan', 'director'].includes(rangoActual) || ['capitán', 'capitan', 'director'].includes(tipoActual)
 
   return (
     <>
       <div className="vista-head">
         <h1>Hola, {primerNombre}</h1>
-        <p>
-          Sesión iniciada como {rango.nombre} · {nivel.etiqueta}
-        </p>
+        <p>Sesión iniciada como {etiquetaCargo}{etiquetaNivel}</p>
       </div>
 
       <div className="stats-grid">
@@ -36,15 +39,13 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Estadística de emergencias del año (motivación al cuerpo). */}
       <div className="panel-box" style={{ marginBottom: 22 }}>
         <div className="panel-box__titulo">Emergencias atendidas este año</div>
         <EmergenciasResumen variante="panel" />
       </div>
 
       <div className="panel-dashboard-grid">
-        {/* Últimos comunicados (todos los que pueden verlos). */}
-        {puede(PERMISOS.VER_COMUNICADOS) && (
+        {puedeVerComunicados && (
           <div className="panel-box">
             <div className="panel-box__titulo">Últimos comunicados</div>
             {comunicados.slice(0, 3).map((c) => (
@@ -59,8 +60,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Resumen de planillas de turno (todos los que ven turnos). */}
-        {puede(PERMISOS.VER_TURNOS) && (
+        {puedeVerTurnos && (
           <div className="panel-box">
             <div className="panel-box__titulo">Planillas de turno</div>
             {planillasTurno.map((p) => {

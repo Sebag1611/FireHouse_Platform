@@ -1,26 +1,22 @@
-import { useSesion } from '../../context'
-import SinPermiso from '../SinPermiso'
+import { useSesion } from '../../context/SesionContext'
+import SinPermiso from '../SinPermiso/SinPermiso'
 
-/**
- * Guardia de permisos para las vistas del panel.
- *
- * @param {string} permiso   - Permiso requerido para ver el contenido.
- * @param {string} mensaje   - Texto a mostrar si no tiene acceso.
- * @param {ReactNode} children - La vista a proteger.
- *
- * Consulta el rol actual (vía useSesion) y decide:
- *  - Si tiene el permiso  -> muestra la vista (children).
- *  - Si NO lo tiene        -> muestra el aviso <SinPermiso>.
- *
- * Centralizar aquí la verificación evita repetir el mismo "if de
- * permiso" en cada página, y hace que la lógica de acceso sea
- * consistente en todo el panel.
- */
-export default function RutaProtegida({ permiso, mensaje, children }) {
-  const { puede } = useSesion()
+export default function RutaProtegida({ rolesPermitidos, mensaje, children }) {
+  const { autenticado, rango, tipo } = useSesion()
 
-  if (!puede(permiso)) {
-    return <SinPermiso mensaje={mensaje} />
+  if (!autenticado) {
+    return <SinPermiso mensaje="Debes iniciar sesión para acceder a esta área." />
+  }
+
+  if (rolesPermitidos && rolesPermitidos.length > 0) {
+    const rangoActual = rango ? rango.toLowerCase() : '';
+    const tipoActual = tipo ? tipo.toLowerCase() : '';
+
+    const tienePermiso = rolesPermitidos.includes(rangoActual) || rolesPermitidos.includes(tipoActual);
+
+    if (!tienePermiso) {
+      return <SinPermiso mensaje={mensaje || "No tienes los privilegios necesarios para ver esto."} />
+    }
   }
 
   return children

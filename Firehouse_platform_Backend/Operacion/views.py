@@ -55,3 +55,39 @@ def Listar_Material_Mayor(request):
     ]
     
     return Response(datos, status=status.HTTP_200_OK)
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Curso, Inscripcion_Curso
+
+@api_view(['POST'])
+def inscribir_bombero(request):
+    curso_id = request.data.get('id_curso')
+    bombero_rut = request.data.get('rut_bombero')
+
+    curso = Curso.objects.get(id_curso=curso_id)
+
+    # 1. Verificar si ya está cerrado
+    if curso.estado == "CERRADO":
+        return Response({"error": "El curso ya está cerrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 2. Contar inscritos actuales
+    cantidad_inscritos = curso.inscritos.count()
+
+    # 3. Verificar cupos
+    if cantidad_inscritos >= curso.cupos:
+        # Si se llenó justo ahora, lo cerramos por seguridad
+        curso.estado = "CERRADO"
+        curso.save()
+        return Response({"error": "No quedan cupos disponibles."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 4. Inscribir al bombero
+    Inscripcion_Curso.objects.create(curso=curso, bombero_id=bombero_rut)
+
+    # 5. Cierre automático post-inscripción si se alcanzó el límite
+    if (cantidad_inscritos + 1) >= curso.cupos:
+        curso.estado = "CERRADO"
+        curso.save()
+
+    return Response({"mensaje": "Inscrito con éxito"}, status=status.HTTP_201_CREATED)

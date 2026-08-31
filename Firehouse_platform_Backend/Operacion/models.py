@@ -59,3 +59,40 @@ class Tripulacion(models.Model):
     id_despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE, db_column='id_despacho')
     rut = models.ForeignKey(Bombero, on_delete=models.CASCADE, db_column='RUT')
     funcion = models.CharField(max_length=100)
+
+class Curso(models.Model):
+    ESTADO_CURSO = [
+        ("ABIERTO", "Abierta"),
+        ("CERRADO", "Cerrada"),
+    ]
+
+    id_curso = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=150)
+    oficial_a_cargo = models.ForeignKey(
+        'Administracion.Bombero', 
+        on_delete=models.CASCADE, 
+        db_column='RUT_Oficial'
+    )
+    fecha = models.DateTimeField()
+    cupos = models.IntegerField()
+    estado = models.CharField(max_length=20, choices=ESTADO_CURSO, default="ABIERTO")
+
+    def __str__(self):
+        return f"{self.nombre} - {self.fecha}"
+
+class Inscripcion_Curso(models.Model):
+    id_inscripcion_curso = models.AutoField(primary_key=True)
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='inscritos')
+    bombero = models.ForeignKey(
+        'Administracion.Bombero', 
+        on_delete=models.CASCADE, 
+        db_column='RUT_Bombero'
+    )
+    fecha_inscripcion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Evita que un mismo bombero se inscriba dos veces en el mismo curso
+        unique_together = ('curso', 'bombero') 
+
+    def __str__(self):
+        return f"{self.bombero} - {self.curso.nombre}"

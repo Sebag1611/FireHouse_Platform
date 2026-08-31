@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { unidades as unidadesData, ESTADOS_OPERATIVOS } from '../../../../data/contenidoPublico'
-import { useSesion } from '../../context'
-import { PERMISOS } from '../../../../data/roles'
+import { useSesion } from '../../context/SesionContext' 
 import { IconoUbicacion } from '../../../../components/ui/Icono'
 import '../../estilos-panel.css'
 import './UnidadesOperativas.css'
@@ -9,10 +8,17 @@ import './UnidadesOperativas.css'
 const OPCIONES = ['disponible', 'emergencia', 'servicio', 'taller']
 
 export default function UnidadesOperativas() {
-  const { puede } = useSesion()
+  const { rango, tipo } = useSesion()
   const [unidades, setUnidades] = useState(unidadesData)
-  const puedeCambiar = puede(PERMISOS.CAMBIAR_ESTADO_UNIDAD)
-  const puedeMover = puede(PERMISOS.MOVER_MATERIAL)
+
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  const rolesAutorizados = ['capitán', 'capitan', 'director', 'teniente']
+  const tienePermiso = rolesAutorizados.includes(rangoActual) || rolesAutorizados.includes(tipoActual)
+
+  const puedeCambiar = tienePermiso
+  const puedeMover = tienePermiso
 
   const cambiarEstado = (id, nuevo) => {
     setUnidades((prev) =>
@@ -26,7 +32,6 @@ export default function UnidadesOperativas() {
         <h1>Material Mayor</h1>
         <p>Pizarra operativa: estado y ubicación de las unidades en tiempo real.</p>
       </div>
-
       <div className="unidades-panel-grid">
         {unidades.map((u) => {
           const est = ESTADOS_OPERATIVOS[u.estado] ?? ESTADOS_OPERATIVOS.taller
@@ -34,18 +39,10 @@ export default function UnidadesOperativas() {
             <div className="unidad-panel-card" key={u.id}>
               <div className="unidad-panel-card__head">
                 <span className="unidad-panel-card__id">{u.id}</span>
-                <span
-                  className="unidad-panel-card__estado"
-                  style={{ '--c': est.color }}
-                >
-                  <i /> {est.etiqueta}
-                </span>
+                <span className="unidad-panel-card__estado" style={{ '--c': est.color }}><i /> {est.etiqueta}</span>
               </div>
-
               <h3>{u.nombre}</h3>
               <span className="unidad-panel-card__tipo">{u.tipo}</span>
-
-              {/* Mapa simulado (carcasa) */}
               <div className="mapa-mock">
                 <div className="mapa-mock__grid" />
                 <span className="mapa-mock__pin" style={{ color: est.color }}>
@@ -55,19 +52,12 @@ export default function UnidadesOperativas() {
                   {puedeMover ? 'Cuartel · sector norte' : 'Ubicación registrada'}
                 </span>
               </div>
-
-              {/* Cambiar estado (según permiso) */}
               {puedeCambiar ? (
                 <div className="unidad-panel-card__acciones">
                   <label>Cambiar estado</label>
-                  <select
-                    value={u.estado}
-                    onChange={(e) => cambiarEstado(u.id, e.target.value)}
-                  >
+                  <select value={u.estado} onChange={(e) => cambiarEstado(u.id, e.target.value)}>
                     {OPCIONES.map((o) => (
-                      <option key={o} value={o}>
-                        {ESTADOS_OPERATIVOS[o].etiqueta}
-                      </option>
+                      <option key={o} value={o}>{ESTADOS_OPERATIVOS[o].etiqueta}</option>
                     ))}
                   </select>
                   {puedeMover && (
@@ -78,8 +68,7 @@ export default function UnidadesOperativas() {
                 </div>
               ) : (
                 <p className="unidad-panel-card__solo-lectura">
-                  Puedes ver la ubicación y el estado. Solo tenientes, capitán y
-                  directora pueden modificarlos.
+                  Puedes ver la ubicación y el estado. Solo tenientes, capitán y directora pueden modificarlos.
                 </p>
               )}
             </div>

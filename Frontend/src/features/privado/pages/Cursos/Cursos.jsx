@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useSesion } from '../../context'
+import { useSesion } from '../../context/SesionContext' // Ruta nueva
 import { cursos as cursosData } from '../../../../data/personal'
-import { PERMISOS, getRango, nombreConNumero } from '../../../../data/roles'
+import { getRango } from '../../../../data/roles' // Quitamos PERMISOS
 import {
   IconoCurso, IconoCheck, IconoOjo, IconoCandado,
   IconoLapiz, IconoBasura, IconoPersona, IconoDescargaPDF,
@@ -11,58 +11,52 @@ import { descargarCursoPDF } from './descargarCursoPDF'
 import '../../estilos-panel.css'
 import './Cursos.css'
 
-/**
- * Módulo de Cursos / capacitaciones.
- *
- * Los oficiales (tenientes, capitán, directora) abren cursos y los
- * bomberos se inscriben. Funciona como encuesta cerrada:
- *  - Con cupos libres: se ve solo el CONTADOR (ej. 2/4), sin nombres.
- *  - Al llenarse: se cierra y se revela la lista de inscritos.
- *  - Los oficiales SIEMPRE ven la lista (permiso VER_INSCRITOS_CURSO).
- */
 export default function Cursos() {
-  const { usuario, rangoId, puede } = useSesion()
-  const gestiona = puede(PERMISOS.GESTIONAR_CURSOS)      // crear/editar/eliminar
-  const puedeInscribirse = puede(PERMISOS.INSCRIBIRSE_CURSO)
-  const veInscritos = puede(PERMISOS.VER_INSCRITOS_CURSO) // oficiales
+  // 1. Traemos tus datos de Django
+  const { nombreCompleto, rango, tipo } = useSesion()
+
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+
+  // 2. Definimos quién es oficial (para crear cursos o ver a los inscritos)
+  const esOficial = ['capitán', 'capitan', 'director', 'teniente'].includes(rangoActual) || ['capitán', 'capitan', 'director', 'teniente'].includes(tipoActual)
+
+  const gestiona = esOficial      
+  const puedeInscribirse = true // Todos los bomberos pueden inscribirse
+  const veInscritos = esOficial 
 
   const [cursos, setCursos] = useState(cursosData)
-  // Curso en edición/creación: objeto o 'nuevo' o null.
   const [editando, setEditando] = useState(null)
 
-  // ¿Estoy inscrito en este curso?
-  const estoyInscrito = (curso) => curso.inscritos.includes(usuario)
+  // 3. Revisamos si tu nombre real de Django ya está en la lista
+  const estoyInscrito = (curso) => curso.inscritos.includes(nombreCompleto)
 
-  // Inscribirse / desinscribirse de un curso.
   const alternarInscripcion = (idCurso) => {
     setCursos((prev) =>
       prev.map((c) => {
         if (c.id !== idCurso) return c
-        const yaEsta = c.inscritos.includes(usuario)
-        // Si ya está lleno y no soy yo, no dejar inscribir.
+        const yaEsta = c.inscritos.includes(nombreCompleto)
+        
         if (!yaEsta && c.inscritos.length >= c.cupos) return c
         return {
           ...c,
           inscritos: yaEsta
-            ? c.inscritos.filter((n) => n !== usuario)
-            : [...c.inscritos, usuario],
+            ? c.inscritos.filter((n) => n !== nombreCompleto)
+            : [...c.inscritos, nombreCompleto],
         }
       })
     )
   }
 
-  // Guardar (crear o editar) un curso.
   const guardarCurso = (datos) => {
     if (datos.id) {
-      // Edición: reemplaza el curso existente.
       setCursos((prev) => prev.map((c) => (c.id === datos.id ? { ...c, ...datos } : c)))
     } else {
-      // Creación: el creador es el usuario actual (por sesión).
       setCursos((prev) => [
         {
           ...datos,
           id: `curso-${Date.now()}`,
-          creadorRangoId: rangoId,
+          creadorRangoId: rangoActual || 'oficial',
           inscritos: [],
         },
         ...prev,
@@ -71,15 +65,13 @@ export default function Cursos() {
     setEditando(null)
   }
 
-  // Eliminar un curso.
   const eliminarCurso = (idCurso) => {
     if (!window.confirm('¿Eliminar este curso? Esta acción no se puede deshacer.')) return
     setCursos((prev) => prev.filter((c) => c.id !== idCurso))
   }
 
-  // Descargar un curso como PDF para registro físico.
   const descargarPDF = (curso) => {
-    const creador = getRango(curso.creadorRangoId)
+    const creador = getRango(curso.creadorRangoId) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
     descargarCursoPDF(curso, creador)
   }
 
@@ -90,7 +82,6 @@ export default function Cursos() {
         <p>Capacitaciones abiertas por la oficialidad para el personal.</p>
       </div>
 
-      {/* Botón crear (solo oficiales que gestionan). */}
       {gestiona && (
         <div className="cursos-acciones">
           <button className="btn btn-primario" onClick={() => setEditando('nuevo')}>
@@ -99,7 +90,6 @@ export default function Cursos() {
         </div>
       )}
 
-      {/* Aviso según permiso. */}
       {puedeInscribirse ? (
         <div className="nota-info">
           <IconoCheck width={18} />
@@ -121,12 +111,10 @@ export default function Cursos() {
 
       <div className="cursos-grid">
         {cursos.map((curso) => {
-          const creador = getRango(curso.creadorRangoId)
+          const creador = getRango(curso.creadorRangoId) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
           const anotados = curso.inscritos.length
           const cerrado = anotados >= curso.cupos
-          // ¿Muestro la lista de inscritos?
-          // Sí, si el curso está cerrado (todos lo ven) o si soy
-          // oficial (los veo siempre).
+          
           const mostrarLista = cerrado || veInscritos
           const inscrito = estoyInscrito(curso)
 
@@ -148,7 +136,6 @@ export default function Cursos() {
                 )}
               </header>
 
-              {/* Quién lo abrió (detectado por su sesión al crear). */}
               <p className="curso-card__creador">
                 {creador.numero ? `${creador.nombre} ${creador.persona}` : creador.persona}
                 {' '}abrió este curso
@@ -159,7 +146,6 @@ export default function Cursos() {
                 <span className="curso-card__desc">{curso.descripcion}</span>
               </div>
 
-              {/* Contador de cupos + barra. */}
               <div className="curso-card__cupos">
                 <div className="curso-card__cupos-info">
                   <span>{anotados} / {curso.cupos} cupos</span>
@@ -173,7 +159,6 @@ export default function Cursos() {
                 </div>
               </div>
 
-              {/* Lista de inscritos (solo si corresponde). */}
               {mostrarLista ? (
                 <div className="curso-card__inscritos">
                   <span className="curso-card__inscritos-rotulo">
@@ -198,9 +183,7 @@ export default function Cursos() {
                 </p>
               )}
 
-              {/* Acciones */}
               <footer className="curso-card__acciones">
-                {/* Descargar PDF: solo tenientes, capitán y director. */}
                 {gestiona && (
                   <button
                     className="btn-mini"
@@ -234,7 +217,6 @@ export default function Cursos() {
         })}
       </div>
 
-      {/* Formulario crear/editar. */}
       {editando && (
         <FormCurso
           curso={editando === 'nuevo' ? null : editando}
