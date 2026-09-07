@@ -1,0 +1,56 @@
+.perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.perfil .panel-box {
+  margin-bottom: 0;
+}
+
+.perfil__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Campo que ocupa las dos columnas */
+.perfil__grid .campo-form--ancho {
+  grid-column: 1 / -1;
+}
+
+.perfil__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.perfil__ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9rem;
+  color: var(--verde-claro);
+  font-weight: 500;
+}
+
+.perfil__error {
+  font-size: 0.9rem;
+  color: var(--rojo-claro);
+  font-weight: 500;
+}
+
+@media (max-width: 560px) {
+  .perfil__grid {
+    grid-template-columns: 1fr;
+  }
+  .perfil__acciones {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .perfil__acciones .btn {
+    width: 100%;
+  }
+}

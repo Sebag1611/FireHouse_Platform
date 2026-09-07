@@ -1,0 +1,115 @@
+.emergencias-resumen {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+/* --- Total destacado --- */
+.emergencias-resumen__total {
+  display: flex;
+  flex-direction: column;
+  padding: 26px;
+  background: linear-gradient(150deg, var(--verde), var(--verde-osc) 55%, var(--rojo-osc));
+  border-radius: var(--radio);
+  color: #fff;
+  text-align: center;
+}
+
+.emergencias-resumen__numero {
+  font-family: var(--display);
+  font-size: 3.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.emergencias-resumen__label {
+  font-size: 0.92rem;
+  margin-top: 8px;
+  opacity: 0.95;
+}
+
+.emergencias-resumen__corte {
+  font-size: 0.78rem;
+  margin-top: 6px;
+  opacity: 0.75;
+}
+
+/* --- Desglose por tipo --- */
+.emergencias-resumen__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.emergencias-tipo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 22px 14px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  transition: var(--transicion);
+}
+
+.emergencias-tipo:hover {
+  border-color: var(--verde-claro);
+  transform: translateY(-3px);
+}
+
+.emergencias-tipo__icono {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--verde) 14%, transparent);
+  color: var(--verde-claro);
+}
+
+/* Variantes de color del icono (identidad dual verde/rojo). */
+.emergencias-tipo--rojo .emergencias-tipo__icono {
+  background: color-mix(in srgb, var(--rojo) 14%, transparent);
+  color: var(--rojo-claro);
+}
+.emergencias-tipo--rojo:hover {
+  border-color: var(--rojo);
+}
+.emergencias-tipo--verde:hover {
+  border-color: var(--verde-claro);
+}
+
+.emergencias-tipo__cantidad {
+  font-family: var(--display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--humo);
+  line-height: 1;
+}
+
+.emergencias-tipo__tipo {
+  font-size: 0.84rem;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Responsive --- */
+@media (max-width: 860px) {
+  .emergencias-resumen {
+    grid-template-columns: 1fr;
+  }
+  .emergencias-resumen__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .emergencias-resumen__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}

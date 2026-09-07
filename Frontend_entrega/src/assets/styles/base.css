@@ -1,0 +1,95 @@
+/**
+ * ============================================================
+ *  BASE · Reset y estilos por defecto de los elementos
+ * ============================================================
+ *  Normaliza el comportamiento de los elementos HTML para que
+ *  se vean igual en todos los navegadores y define los estilos
+ *  base del documento (fondo, fuente, etc.).
+ * ============================================================
+ */
+
+/* Reset universal: elimina márgenes/paddings por defecto del
+   navegador y aplica box-sizing coherente (el padding no
+   agranda el ancho total del elemento). */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth; /* Desplazamiento suave con anclas */
+}
+
+body {
+  font-family: var(--body);
+  background-color: var(--carbon);
+  color: var(--humo);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Transición suave al alternar entre modo día y noche. */
+  transition: background-color var(--transicion), color var(--transicion);
+}
+
+/* Los enlaces heredan el color del texto y no llevan subrayado
+   por defecto; cada componente decide su propio estilo. */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Reset de botones: sin borde ni fondo; los estilos vienen de
+   las clases .btn. Mantiene la fuente heredada. */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Todos los títulos usan la fuente display por defecto. */
+h1, h2, h3, h4 {
+  font-family: var(--display);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* --- Accesibilidad --- */
+
+/* Contorno visible al navegar con teclado (Tab). Importante
+   para usuarios que no usan mouse. */
+:focus-visible {
+  outline: 2.5px solid var(--verde-claro);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Texto solo para lectores de pantalla (oculto visualmente). */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Respeta la preferencia del sistema de "reducir movimiento":
+   desactiva animaciones para usuarios sensibles al movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

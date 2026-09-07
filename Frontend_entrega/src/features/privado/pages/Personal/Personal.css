@@ -1,0 +1,137 @@
+/* Fondo oscuro del modal */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(8, 12, 9, 0.72);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: aparecer 0.2s ease;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Tarjeta del formulario */
+.form-personal {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--sombra);
+  animation: subir 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes subir {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.form-personal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--borde);
+  position: sticky;
+  top: 0;
+  background: var(--superficie);
+  border-radius: var(--radio) var(--radio) 0 0;
+}
+
+.form-personal__head h2 {
+  font-size: 1.3rem;
+}
+
+.form-personal__cerrar {
+  color: var(--gris);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-sm);
+  transition: var(--transicion);
+}
+
+.form-personal__cerrar:hover {
+  background: var(--carbon-2);
+  color: var(--rojo-claro);
+}
+
+/* Rejilla de campos: dos columnas */
+.form-personal__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 24px;
+}
+
+.campo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+}
+
+/* Campo que ocupa las dos columnas */
+.campo-form--ancho {
+  grid-column: 1 / -1;
+}
+
+.campo-form input,
+.campo-form select {
+  font-family: var(--body);
+  font-size: 0.96rem;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--humo);
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 11px 13px;
+  transition: border-color var(--transicion);
+}
+
+.campo-form input:focus,
+.campo-form select:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.form-personal__error {
+  color: var(--rojo-claro);
+  font-size: 0.9rem;
+  padding: 0 24px;
+  margin-top: -6px;
+}
+
+.form-personal__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px 24px;
+  border-top: 1px solid var(--borde);
+}
+
+@media (max-width: 560px) {
+  .form-personal__grid {
+    grid-template-columns: 1fr;
+  }
+  .form-personal__acciones {
+    flex-direction: column-reverse;
+  }
+  .form-personal__acciones .btn {
+    width: 100%;
+  }
+}

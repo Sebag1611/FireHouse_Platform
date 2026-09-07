@@ -1,0 +1,298 @@
+.cursos-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.cursos-vacio {
+  text-align: center;
+  color: var(--gris-tenue);
+  padding: 40px;
+}
+
+.cursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+/* --- Tarjeta de curso --- */
+.curso-card {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: var(--transicion);
+}
+
+.curso-card--cerrado {
+  border-color: color-mix(in srgb, var(--verde) 40%, var(--borde));
+}
+
+.curso-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.curso-card__titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--rojo-claro);
+}
+
+.curso-card__titulo h2 {
+  font-size: 1.15rem;
+  color: var(--humo);
+}
+
+.curso-card__estado {
+  font-family: var(--display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.curso-card__estado--abierto {
+  background: color-mix(in srgb, var(--rojo) 16%, transparent);
+  color: var(--rojo-claro);
+}
+
+.curso-card__estado--cerrado {
+  background: color-mix(in srgb, var(--verde) 18%, transparent);
+  color: var(--verde-claro);
+}
+
+.curso-card__creador {
+  font-size: 0.86rem;
+  color: var(--gris-tenue);
+  font-style: italic;
+}
+
+.curso-card__datos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.92rem;
+  color: var(--gris);
+}
+
+.curso-card__datos b {
+  color: var(--humo);
+}
+
+.curso-card__desc {
+  color: var(--gris-tenue);
+}
+
+/* --- Cupos + barra --- */
+.curso-card__cupos-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--display);
+  font-size: 0.9rem;
+  color: var(--humo);
+  margin-bottom: 6px;
+}
+
+.curso-card__lleno {
+  font-size: 0.76rem;
+  color: var(--verde-claro);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.curso-barra {
+  height: 8px;
+  background: var(--carbon-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.curso-barra__relleno {
+  height: 100%;
+  background: linear-gradient(90deg, var(--verde), var(--rojo));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* --- Inscritos --- */
+.curso-card__inscritos {
+  background: var(--carbon-2);
+  border-radius: var(--radio-sm);
+  padding: 12px 14px;
+}
+
+.curso-card__inscritos-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--display);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+  margin-bottom: 8px;
+}
+
+.curso-card__solo-oficial {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--servicio);
+  font-style: italic;
+}
+
+.curso-card__inscritos ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.curso-card__inscritos li {
+  font-size: 0.9rem;
+  color: var(--gris);
+  padding-left: 14px;
+  position: relative;
+}
+
+.curso-card__inscritos li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--verde-claro);
+}
+
+.curso-card__sin-inscritos {
+  font-size: 0.88rem;
+  color: var(--gris-tenue);
+}
+
+.curso-card__oculto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--gris-tenue);
+  background: var(--carbon-2);
+  padding: 12px 14px;
+  border-radius: var(--radio-sm);
+  border: 1px dashed var(--borde);
+}
+
+/* --- Acciones --- */
+.curso-card__acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* --- Formulario de curso --- */
+.form-curso {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sombra);
+  animation: subir 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.form-curso__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.form-curso__head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+}
+
+.form-curso__cerrar {
+  color: var(--gris);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-sm);
+  transition: var(--transicion);
+}
+
+.form-curso__cerrar:hover {
+  background: var(--carbon-2);
+  color: var(--rojo-claro);
+}
+
+.form-curso__body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-curso__body textarea {
+  font-family: var(--body);
+  font-size: 0.96rem;
+  color: var(--humo);
+  background: var(--carbon-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 11px 13px;
+  resize: vertical;
+}
+
+.form-curso__body textarea:focus {
+  outline: none;
+  border-color: var(--verde-claro);
+}
+
+.form-curso__error {
+  color: var(--rojo-claro);
+  font-size: 0.9rem;
+}
+
+.form-curso__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--borde);
+}
+
+@media (max-width: 480px) {
+  .cursos-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-curso__acciones {
+    flex-direction: column-reverse;
+  }
+  .form-curso__acciones .btn {
+    width: 100%;
+  }
+}

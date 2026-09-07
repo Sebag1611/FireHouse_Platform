@@ -1,0 +1,107 @@
+/**
+ * ============================================================
+ *  VARIABLES · Tokens del sistema de diseño
+ * ============================================================
+ *  Define los "tokens" (colores, tipografía, medidas) de la
+ *  identidad visual de la 3ra Compañía de Bomberos de Calama.
+ *
+ *  ¿Por qué centralizar aquí?
+ *  Cambiar un color o una medida en este archivo lo actualiza
+ *  en TODO el sitio. Los componentes nunca escriben un color
+ *  "a mano" (#15663f), siempre usan var(--verde).
+ *
+ *  TEMAS (modo día / modo noche):
+ *  Los tokens se dividen en dos grupos:
+ *   - Los que NO cambian con el tema (tipografía, medidas, verde
+ *     institucional, estados) viven en :root.
+ *   - Los que SÍ cambian (fondos, texto, bordes, sombras) se
+ *     definen dos veces: el tema oscuro es el valor por defecto,
+ *     y el tema claro se aplica cuando el <html> tiene el
+ *     atributo data-theme="claro". Así, cambiar de tema es solo
+ *     cambiar ese atributo; los componentes no se enteran.
+ * ============================================================
+ */
+
+/* Fuentes: Oswald (títulos, aire de señalética de cuartel) +
+   Inter (cuerpo, alta legibilidad en pantalla). */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ==========================================================
+     TOKENS FIJOS (iguales en día y noche)
+     ========================================================== */
+
+  /* --- Paleta institucional (verde 3ra Compañía) --- */
+  --verde: #15663f;       /* Verde institucional principal */
+  --verde-osc: #0f4c2e;   /* Verde oscuro: hover y degradados */
+  --verde-claro: #2e9d68; /* Verde claro: acentos y enlaces */
+
+  /* --- Rojo institucional (acento, identidad bomberil) --- */
+  --rojo: #c1272d;        /* Rojo bombero principal (acentos) */
+  --rojo-osc: #97161b;    /* Rojo oscuro: hover */
+  --rojo-claro: #e8474d;  /* Rojo claro: detalles y realces */
+
+  /* --- Estados operativos (pizarra de carros, HU-13) --- */
+  --disponible: #27c26e;  /* Unidad lista */
+  --emergencia: #e63946;  /* En emergencia */
+  --servicio: #f2a33c;    /* En acto de servicio */
+  --taller: #6b6b76;      /* Fuera de servicio */
+
+  /* --- Tipografía --- */
+  --display: 'Oswald', 'Arial Narrow', sans-serif; /* Títulos */
+  --body: 'Inter', system-ui, -apple-system, sans-serif; /* Cuerpo */
+
+  /* --- Medidas de layout --- */
+  --max: 1200px;          /* Ancho máximo del contenido */
+  --radio: 14px;          /* Radio de esquinas de tarjetas */
+  --radio-sm: 8px;        /* Radio de botones e inputs */
+
+  /* --- Transición estándar --- */
+  --transicion: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ==========================================================
+     TOKENS DE TEMA · valores por defecto = MODO NOCHE (oscuro)
+     ========================================================== */
+
+  /* --- Fondos y superficies --- */
+  --carbon: #0d100e;      /* Fondo general */
+  --carbon-2: #141813;    /* Fondo de barras y secciones alternas */
+  --superficie: #1a1f1b;  /* Tarjetas y cajas */
+  --superficie-2: #232a24;/* Bordes internos y divisores suaves */
+  --borde: #313a32;       /* Bordes de tarjetas */
+
+  /* --- Texto --- */
+  --humo: #f4f6f3;        /* Texto principal */
+  --gris: #b6c0b8;        /* Texto secundario */
+  --gris-tenue: #7c887e;  /* Texto terciario / deshabilitado */
+
+  /* --- Sombras --- */
+  --sombra: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --sombra-verde: 0 12px 40px rgba(21, 102, 63, 0.3);
+}
+
+/* ============================================================
+   MODO DÍA (claro) · sobrescribe solo los tokens de tema
+   ============================================================
+   Se activa poniendo data-theme="claro" en el <html>. Los
+   fondos pasan a tonos claros y el texto a tonos oscuros,
+   manteniendo el mismo verde institucional para no perder la
+   identidad de la compañía.
+   ============================================================ */
+:root[data-theme='claro'] {
+  /* --- Fondos y superficies (claros) --- */
+  --carbon: #f4f6f3;      /* Fondo general claro */
+  --carbon-2: #eaeee9;    /* Barras y secciones alternas */
+  --superficie: #ffffff;  /* Tarjetas y cajas */
+  --superficie-2: #e4e9e3;/* Divisores suaves */
+  --borde: #d3dad2;       /* Bordes de tarjetas */
+
+  /* --- Texto (oscuro sobre claro) --- */
+  --humo: #16201a;        /* Texto principal */
+  --gris: #4a564d;        /* Texto secundario */
+  --gris-tenue: #78857a;  /* Texto terciario / deshabilitado */
+
+  /* --- Sombras (más suaves en fondo claro) --- */
+  --sombra: 0 16px 40px rgba(20, 40, 28, 0.14);
+  --sombra-verde: 0 12px 34px rgba(21, 102, 63, 0.22);
+}

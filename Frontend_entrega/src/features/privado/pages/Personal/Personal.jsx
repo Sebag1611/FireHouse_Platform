@@ -1,0 +1,92 @@
+import { useState } from 'react'
+import { useSesion } from '../../context/SesionContext' 
+import { bomberos as bomberosData } from '../../../../data/personal'
+import { getRango, getNivel } from '../../../../data/roles' 
+import { IconoLapiz, IconoOjo, IconoGrupo } from '../../../../components/ui/Icono'
+import FormCrearPersonal from './FormCrearPersonal'
+import '../../estilos-panel.css'
+import './Personal.css'
+
+const estadoBombero = {
+  activo: { etiqueta: 'Activo', color: 'var(--disponible)' },
+  licencia: { etiqueta: 'Con licencia', color: 'var(--servicio)' },
+  baja: { etiqueta: 'De baja', color: 'var(--gris-tenue)' },
+}
+
+export default function Personal() {
+  const { rango, tipo } = useSesion()
+  
+  const rangoActual = rango ? rango.toLowerCase() : ''
+  const tipoActual = tipo ? tipo.toLowerCase() : ''
+  const puedeModificar = ['capitán', 'capitan', 'director'].includes(rangoActual) || ['capitán', 'capitan', 'director'].includes(tipoActual)
+  
+  const editar = puedeModificar
+  const crear = puedeModificar 
+
+  const [bomberos, setBomberos] = useState(bomberosData)
+  const [creando, setCreando] = useState(false)
+
+  const agregarPersona = (persona) => {
+    setBomberos((prev) => [...prev, { ...persona, id: prev.length + 1, estado: 'activo' }])
+    setCreando(false)
+  }
+
+  return (
+    <>
+      <div className="vista-head">
+        <h1>Personal</h1>
+        <p>Registro de bomberos de la compañía.</p>
+      </div>
+      {!editar && !crear && (
+        <div className="nota-info">
+          <IconoOjo width={18} />
+          Tu rango puede <strong>&nbsp;visualizar&nbsp;</strong> la información, pero no editarla.
+        </div>
+      )}
+      <div className="panel-box">
+        <div className="panel-box__titulo">
+          <span>Integrantes ({bomberos.length})</span>
+          {crear && (
+            <button className="btn-mini btn-mini--primario" onClick={() => setCreando(true)}>
+              <IconoGrupo width={14} /> Crear bombero / aspirante
+            </button>
+          )}
+        </div>
+        <div className="tabla-scroll">
+          <table className="tabla">
+            <thead>
+              <tr>
+                <th>Nombre</th><th>Rango</th><th>Nivel</th><th>Estado</th><th>Ingreso</th><th>Teléfono</th><th style={{ textAlign: 'right' }}>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bomberos.map((b) => {
+                const rangoData = getRango(b.rango)
+                const nivelData = getNivel(b.rango)
+                const est = estadoBombero[b.estado] ?? estadoBombero.activo
+                return (
+                  <tr key={b.id}>
+                    <td className="tabla__nombre">{b.nombre}</td>
+                    <td>{rangoData.numero ? `${rangoData.numero} · ${rangoData.nombre}` : rangoData.nombre}</td>
+                    <td><span className="chip" style={{ '--c': nivelData.color }}>{nivelData.etiqueta}</span></td>
+                    <td><span className="chip" style={{ '--c': est.color }}>{est.etiqueta}</span></td>
+                    <td>{b.ingreso}</td>
+                    <td>{b.telefono}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      {editar ? (
+                        <button className="btn-mini btn-mini--primario"><IconoLapiz width={14} /> Editar</button>
+                      ) : (
+                        <button className="btn-mini"><IconoOjo width={14} /> Ver</button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {creando && <FormCrearPersonal onGuardar={agregarPersona} onCerrar={() => setCreando(false)} />}
+    </>
+  )
+}

@@ -1,0 +1,18 @@
+.toggle-tema {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde);
+  color: var(--gris);
+  background: transparent;
+  transition: var(--transicion);
+  flex-shrink: 0;
+}
+
+.toggle-tema:hover {
+  color: var(--verde-claro);
+  border-color: var(--verde-claro);
+  transform: translateY(-1px);
+}
