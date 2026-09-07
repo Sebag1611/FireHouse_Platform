@@ -20,6 +20,7 @@ export const ROUTES = {
   // ---------- Cara pública ----------
   HOME: '/',
   NOSOTROS: '/nosotros',
+  DIRECTORES_HONORARIOS: '/directores-honorarios',
   UNIDADES: '/unidades',
   NOTICIAS: '/noticias',
   CONTACTO: '/contacto',
@@ -33,6 +34,11 @@ export const ROUTES = {
   PANEL_TURNOS: '/panel/turnos',
   PANEL_CURSOS: '/panel/cursos',
   PANEL_COMUNICADOS: '/panel/comunicados',
+  PANEL_NOTICIAS: '/panel/noticias',
+  PANEL_EMERGENCIAS: '/panel/emergencias',
+  PANEL_DISPONIBILIDAD: '/panel/disponibilidad',
+  PANEL_INFO_PERSONAL: '/panel/informacion-personal',
+  PANEL_MI_PERFIL: '/panel/mi-perfil',
   PANEL_POSTULACIONES: '/panel/postulaciones',
 }
 
@@ -44,6 +50,7 @@ export const ROUTES = {
 export const NAV_PUBLICO = [
   { to: ROUTES.HOME, label: 'Inicio', exacto: true },
   { to: ROUTES.NOSOTROS, label: 'Nosotros' },
+  { to: ROUTES.DIRECTORES_HONORARIOS, label: 'Directores Honorarios' },
   { to: ROUTES.UNIDADES, label: 'Material Mayor' },
   { to: ROUTES.NOTICIAS, label: 'Noticias' },
   { to: ROUTES.CONTACTO, label: 'Contacto' },

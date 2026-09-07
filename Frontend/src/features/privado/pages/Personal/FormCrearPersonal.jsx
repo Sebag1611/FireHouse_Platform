@@ -3,6 +3,7 @@ import { IconoCerrar, IconoCheck } from '../../../../components/ui/Icono'
 import {
   limpiarRut, formatearRutConGuion, formatearTelefono,
 } from '../../../../data/formatoChileno'
+import { rutFormatoValido, telefonoValido, correoValido } from '../../../../data/validaciones'
 
 /**
  * Formulario completo para dar de alta un Bombero o Aspirante.
@@ -50,9 +51,24 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
     setForm((prev) => ({ ...prev, [campo]: formatearTelefono(prev[campo]) }))
 
   const guardar = () => {
-    // Validación mínima de los campos obligatorios.
+    // Campos obligatorios.
     if (!form.nombre.trim() || !form.rut.trim() || !form.telefono.trim()) {
       setError('Completa al menos nombre, RUT y teléfono.')
+      return
+    }
+    // RUT con formato válido (cuerpo-dígito).
+    if (!rutFormatoValido(form.rut)) {
+      setError('El RUT no tiene un formato válido (ej. 12345678-9).')
+      return
+    }
+    // Teléfono con al menos 9 dígitos.
+    if (!telefonoValido(form.telefono)) {
+      setError('El teléfono no es válido (ej. +56 9 1234 5678).')
+      return
+    }
+    // Correo válido solo si se ingresó (es opcional aquí).
+    if (form.correo && !correoValido(form.correo)) {
+      setError('El correo no tiene un formato válido.')
       return
     }
     onGuardar(form)

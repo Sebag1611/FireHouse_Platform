@@ -22,6 +22,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 6px 18px;
+  flex-shrink: 0;
 }
 
 .panel__cerrar-movil {
@@ -37,6 +38,7 @@
   color: var(--gris-tenue);
   padding: 0 8px;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .panel__nav {
@@ -44,6 +46,46 @@
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  /* Permite desplazarse por el menú cuando hay muchos ítems, sin
+     empujar el botón "Salir" fuera de la pantalla. min-height: 0 es
+     necesario para que el scroll funcione dentro de un flex. */
+  overflow-y: auto;
+  min-height: 0;
+  /* Un pequeño respiro para que el último enlace no quede pegado. */
+  padding-bottom: 8px;
+}
+
+/* Scrollbar discreta acorde al tema oscuro. */
+.panel__nav::-webkit-scrollbar {
+  width: 6px;
+}
+.panel__nav::-webkit-scrollbar-thumb {
+  background: var(--borde);
+  border-radius: 3px;
+}
+.panel__nav::-webkit-scrollbar-thumb:hover {
+  background: var(--gris-tenue);
+}
+
+/* Sección del menú (grupo de enlaces con título) */
+.panel__nav-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel__nav-seccion + .panel__nav-seccion {
+  margin-top: 14px;
+}
+
+.panel__nav-titulo {
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gris-tenue);
+  padding: 4px 12px 6px;
 }
 
 .panel__link {
@@ -88,6 +130,8 @@
   margin-top: 8px;
   border-top: 1px solid var(--borde);
   padding-top: 18px;
+  /* Siempre visible abajo: no se comprime aunque el menú sea largo. */
+  flex-shrink: 0;
 }
 
 .panel__salir:hover {

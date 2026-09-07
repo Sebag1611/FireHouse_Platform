@@ -12,19 +12,38 @@
  * ============================================================
  */
 
+// Regímenes de turno laboral (relevante en zona minera: indica el
+// patrón de días en faena vs. días libres). "personalizado" permite
+// describir un régimen distinto en texto libre.
+export const regimenesLaborales = {
+  '5x2': { etiqueta: '5x2', descripcion: '5 días de trabajo, 2 libres' },
+  '7x7': { etiqueta: '7x7', descripcion: '7 días de trabajo, 7 libres' },
+  '14x14': { etiqueta: '14x14', descripcion: '14 días de trabajo, 14 libres' },
+  'personalizado': { etiqueta: 'Personalizado', descripcion: 'Régimen especial' },
+}
+
+// Estados de disponibilidad del personal (distinto del estado
+// administrativo "activo/licencia"). Indica si la persona está
+// disponible para acudir a emergencias o actividades.
+export const estadosDisponibilidad = {
+  laboral: { etiqueta: 'En Laboral', color: 'var(--servicio)', descripcion: 'En su trabajo; disponibilidad limitada.' },
+  libre: { etiqueta: 'Libre', color: 'var(--disponible)', descripcion: 'Disponible para acudir.' },
+  excusa: { etiqueta: 'Con excusa', color: 'var(--taller)', descripcion: 'No disponible; justificado.' },
+}
+
 // Personal de la compañía
 export const bomberos = [
-  { id: 1, nombre: 'Ivan Villagra Pacan', rango: 'capitan', estado: 'activo', ingreso: '2010-03-12', telefono: '+56 9 1111 1111', tipoSangre: 'O+' },
-  { id: 2, nombre: 'Evelyn Cruz Cruz', rango: 'director', estado: 'activo', ingreso: '2008-06-01', telefono: '+56 9 2222 2222', tipoSangre: 'A+' },
-  { id: 3, nombre: 'Jeferson Araya', rango: 'teniente1', estado: 'activo', ingreso: '2014-09-20', telefono: '+56 9 3333 3333', tipoSangre: 'B+' },
-  { id: 4, nombre: 'Omar Cruz', rango: 'teniente2', estado: 'activo', ingreso: '2015-01-15', telefono: '+56 9 4444 4444', tipoSangre: 'O-' },
-  { id: 5, nombre: 'Pablo Valdes', rango: 'teniente3', estado: 'activo', ingreso: '2016-11-05', telefono: '+56 9 5555 5555', tipoSangre: 'A-' },
-  { id: 6, nombre: 'Juan Pacheco', rango: 'ayudante1', estado: 'activo', ingreso: '2018-04-10', telefono: '+56 9 6666 6666', tipoSangre: 'AB+' },
-  { id: 7, nombre: 'Lissete Perez de Arce', rango: 'ayudante2', estado: 'activo', ingreso: '2019-08-30', telefono: '+56 9 7777 7777', tipoSangre: 'O+' },
-  { id: 8, nombre: 'Natalia Anza', rango: 'secretario', estado: 'activo', ingreso: '2016-07-22', telefono: '+56 9 8888 8888', tipoSangre: 'A+' },
-  { id: 9, nombre: 'Allison Maulen', rango: 'tesorero', estado: 'activo', ingreso: '2017-02-18', telefono: '+56 9 9999 9999', tipoSangre: 'B-' },
-  { id: 10, nombre: 'Diego Fuentes', rango: 'bombero', estado: 'activo', ingreso: '2022-05-14', telefono: '+56 9 1010 1010', tipoSangre: 'O+' },
-  { id: 11, nombre: 'Camila Vega', rango: 'bombero', estado: 'activo', ingreso: '2023-03-08', telefono: '+56 9 1111 2020', tipoSangre: 'A+' },
+  { id: 1, nombre: 'Ivan Villagra Pacan', rango: 'capitan', estado: 'activo', ingreso: '2010-03-12', telefono: '+56 9 1111 1111', tipoSangre: 'O+' , disponibilidad: 'libre' , regimen: '5x2', edad: 48, correo: 'integrante1@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 2, nombre: 'Evelyn Cruz Cruz', rango: 'director', estado: 'activo', ingreso: '2008-06-01', telefono: '+56 9 2222 2222', tipoSangre: 'A+' , disponibilidad: 'laboral' , regimen: '7x7', edad: 52, correo: 'integrante2@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 3, nombre: 'Jeferson Araya', rango: 'teniente1', estado: 'activo', ingreso: '2014-09-20', telefono: '+56 9 3333 3333', tipoSangre: 'B+' , disponibilidad: 'libre' , regimen: '14x14', edad: 39, correo: 'integrante3@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 4, nombre: 'Omar Cruz', rango: 'teniente2', estado: 'activo', ingreso: '2015-01-15', telefono: '+56 9 4444 4444', tipoSangre: 'O-' , disponibilidad: 'excusa' , regimen: '5x2', edad: 41, correo: 'integrante4@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 5, nombre: 'Pablo Valdes', rango: 'teniente3', estado: 'activo', ingreso: '2016-11-05', telefono: '+56 9 5555 5555', tipoSangre: 'A-' , disponibilidad: 'laboral' , regimen: '7x7', edad: 44, correo: 'integrante5@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 6, nombre: 'Juan Pacheco', rango: 'ayudante1', estado: 'activo', ingreso: '2018-04-10', telefono: '+56 9 6666 6666', tipoSangre: 'AB+' , disponibilidad: 'libre' , regimen: '14x14', edad: 35, correo: 'integrante6@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 7, nombre: 'Lissete Perez de Arce', rango: 'ayudante2', estado: 'activo', ingreso: '2019-08-30', telefono: '+56 9 7777 7777', tipoSangre: 'O+' , disponibilidad: 'laboral' , regimen: 'personalizado', edad: 37, correo: 'integrante7@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 8, nombre: 'Natalia Anza', rango: 'secretario', estado: 'activo', ingreso: '2016-07-22', telefono: '+56 9 8888 8888', tipoSangre: 'A+' , disponibilidad: 'libre' , regimen: '5x2', edad: 33, correo: 'integrante8@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 9, nombre: 'Allison Maulen', rango: 'tesorero', estado: 'activo', ingreso: '2017-02-18', telefono: '+56 9 9999 9999', tipoSangre: 'B-' , disponibilidad: 'excusa' , regimen: '7x7', edad: 46, correo: 'integrante9@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 10, nombre: 'Diego Fuentes', rango: 'bombero', estado: 'activo', ingreso: '2022-05-14', telefono: '+56 9 1010 1010', tipoSangre: 'O+' , disponibilidad: 'libre' , regimen: '14x14', edad: 29, correo: 'integrante10@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
+  { id: 11, nombre: 'Camila Vega', rango: 'bombero', estado: 'activo', ingreso: '2023-03-08', telefono: '+56 9 1111 2020', tipoSangre: 'A+' , disponibilidad: 'laboral' , regimen: '5x2', edad: 27, correo: 'integrante11@terceracalama.cl', direccion: 'Calama, Región de Antofagasta' },
 ]
 
 /* ------------------------------------------------------------
@@ -160,6 +179,37 @@ export const cursos = [
     creadorRangoId: 'teniente2',
     cupos: 3,
     inscritos: ['Juan Pacheco', 'Natalia Anza', 'Allison Maulen'],
+  },
+]
+
+// Noticias internas de la compañía.
+// Las gestiona la secretaría (agregar, editar, eliminar). Pueden
+// tener foto o no. En la maqueta, la foto es una URL/ruta opcional;
+// cuando no hay, la tarjeta se muestra sin imagen.
+export const noticiasInternas = [
+  {
+    id: 1,
+    titulo: 'Reunión general de compañía',
+    cuerpo: 'Se cita a todo el personal a la reunión general del último viernes del mes en el cuartel. Asistencia obligatoria para tratar temas operativos y administrativos.',
+    fecha: '2026-06-28',
+    autor: 'Secretaría',
+    foto: null,
+  },
+  {
+    id: 2,
+    titulo: 'Nuevo equipamiento HazMat recibido',
+    cuerpo: 'Llegaron los nuevos trajes de protección nivel A para el grupo GTO. El material quedará disponible tras la revisión y registro correspondiente.',
+    fecha: '2026-06-24',
+    autor: 'Secretaría',
+    foto: null,
+  },
+  {
+    id: 3,
+    titulo: 'Felicitaciones al equipo de rescate vehicular',
+    cuerpo: 'Reconocimiento al equipo por su desempeño en el operativo de la ruta 25. Excelente trabajo en equipo y tiempos de respuesta.',
+    fecha: '2026-06-20',
+    autor: 'Secretaría',
+    foto: null,
   },
 ]
 

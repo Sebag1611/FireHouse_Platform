@@ -2,13 +2,13 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { ROUTES } from './app/routes'
 
 import LayoutPublico from './features/publico/LayoutPublico'
-import { Inicio, Nosotros, Unidades, Noticias, Contacto, Postular, Acceso, NoEncontrado } from './features/publico/pages'
+import { Inicio, Nosotros, DirectoresHonorarios, Unidades, Noticias, Contacto, Postular, Acceso, NoEncontrado } from './features/publico/pages'
 
 import { SesionProvider } from './features/privado/context/SesionContext'
 import LayoutPrivado from './features/privado/LayoutPrivado'
 import RutaProtegida from './features/privado/components/RutaProtegida/RutaProtegida'
 // ¡Aquí agregamos Cursos a la lista de importaciones!
-import { Dashboard, Personal, UnidadesOperativas, Turnos, Comunicados, Postulaciones, Cursos } from './features/privado/pages'
+import { Dashboard, Personal, UnidadesOperativas, Turnos, Comunicados, Postulaciones, Cursos, NoticiasInternas, Emergencias, Disponibilidad, InformacionPersonal, MiPerfil } from './features/privado/pages'
 
 export default function App() {
   return (
@@ -17,6 +17,7 @@ export default function App() {
         {/* ---------- CARA PÚBLICA ---------- */}
         <Route path={ROUTES.HOME} element={<LayoutPublico><Inicio /></LayoutPublico>} />
         <Route path={ROUTES.NOSOTROS} element={<LayoutPublico><Nosotros /></LayoutPublico>} />
+        <Route path={ROUTES.DIRECTORES_HONORARIOS} element={<LayoutPublico><DirectoresHonorarios /></LayoutPublico>} />
         <Route path={ROUTES.UNIDADES} element={<LayoutPublico><Unidades /></LayoutPublico>} />
         <Route path={ROUTES.NOTICIAS} element={<LayoutPublico><Noticias /></LayoutPublico>} />
         <Route path={ROUTES.CONTACTO} element={<LayoutPublico><Contacto /></LayoutPublico>} />
@@ -35,6 +36,11 @@ export default function App() {
         <Route path={ROUTES.PANEL_CURSOS} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['capitán', 'capitan', 'director', 'teniente', 'bombero']}><Cursos /></RutaProtegida></LayoutPrivado>} />
         
         <Route path={ROUTES.PANEL_COMUNICADOS} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['capitán', 'capitan', 'director', 'teniente', 'bombero']}><Comunicados /></RutaProtegida></LayoutPrivado>} />
+        <Route path={ROUTES.PANEL_NOTICIAS} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['capitán', 'capitan', 'director', 'teniente', 'bombero', 'secretaria', 'aspirante']}><NoticiasInternas /></RutaProtegida></LayoutPrivado>} />
+        <Route path={ROUTES.PANEL_EMERGENCIAS} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['capitán', 'capitan', 'director', 'teniente', 'bombero', 'secretaria', 'aspirante']}><Emergencias /></RutaProtegida></LayoutPrivado>} />
+        <Route path={ROUTES.PANEL_DISPONIBILIDAD} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['capitán', 'capitan', 'director', 'teniente', 'bombero', 'secretaria', 'aspirante']}><Disponibilidad /></RutaProtegida></LayoutPrivado>} />
+        <Route path={ROUTES.PANEL_INFO_PERSONAL} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['capitán', 'capitan', 'director', 'teniente', 'bombero', 'secretaria', 'aspirante']}><InformacionPersonal /></RutaProtegida></LayoutPrivado>} />
+        <Route path={ROUTES.PANEL_MI_PERFIL} element={<LayoutPrivado><RutaProtegida><MiPerfil /></RutaProtegida></LayoutPrivado>} />
         
         <Route path={ROUTES.PANEL_POSTULACIONES} element={<LayoutPrivado><RutaProtegida rolesPermitidos={['director']}><Postulaciones /></RutaProtegida></LayoutPrivado>} />
         

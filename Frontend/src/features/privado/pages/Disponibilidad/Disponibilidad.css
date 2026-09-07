@@ -1,0 +1,107 @@
+/* --- Resumen por estado --- */
+.disp-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.disp-resumen__card {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--c, var(--verde));
+  border-radius: var(--radio);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.disp-resumen__num {
+  font-family: var(--display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--c, var(--humo));
+  line-height: 1;
+}
+
+.disp-resumen__label {
+  font-size: 0.86rem;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Lista de personal --- */
+.disp-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.disp-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.disp-fila:last-child {
+  border-bottom: none;
+}
+
+.disp-fila__persona {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.disp-fila__nombre {
+  font-size: 0.98rem;
+  color: var(--humo);
+  font-weight: 500;
+}
+
+.disp-fila__rango {
+  font-size: 0.82rem;
+  color: var(--gris-tenue);
+}
+
+/* Badge de estado (solo lectura) */
+.disp-fila__badge {
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--c, var(--verde));
+  padding: 5px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Selector de estado (editable) */
+.disp-fila__selector {
+  font-family: var(--display);
+  font-size: 0.86rem;
+  color: var(--humo);
+  background: var(--carbon-2);
+  border: 1px solid var(--c, var(--borde));
+  border-radius: var(--radio-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color var(--transicion);
+}
+
+.disp-fila__selector:focus {
+  outline: none;
+  border-color: var(--c, var(--verde-claro));
+}
+
+@media (max-width: 480px) {
+  .disp-resumen {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

@@ -1,0 +1,99 @@
+.honorarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+.honorario {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transicion);
+}
+
+.honorario:hover {
+  transform: translateY(-4px);
+  border-color: var(--rojo);
+  box-shadow: var(--sombra);
+}
+
+/* --- Foto / silueta --- */
+.honorario__foto {
+  aspect-ratio: 4 / 5;
+  background: var(--carbon-2);
+  display: grid;
+  place-items: center;
+  border-bottom: 3px solid var(--rojo);
+}
+
+.honorario__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Marco con silueta mientras no hay foto */
+.honorario__silueta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--gris-tenue);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--verde) 6%, transparent) 0 12px,
+      transparent 12px 24px
+    );
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.honorario__silueta span {
+  font-family: var(--display);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* --- Cuerpo --- */
+.honorario__cuerpo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.honorario__cargo {
+  font-family: var(--display);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rojo-claro);
+}
+
+.honorario__nombre {
+  font-size: 1.12rem;
+  color: var(--humo);
+  line-height: 1.25;
+}
+
+.honorario__desc {
+  font-size: 0.9rem;
+  color: var(--gris);
+  line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+  .honorarios-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .honorario__cuerpo {
+    padding: 14px;
+  }
+}

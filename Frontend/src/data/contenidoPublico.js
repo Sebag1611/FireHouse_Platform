@@ -97,6 +97,22 @@ export const noticias = [
 
 // HU-06 — Registro automático de emergencias recientes
 // (Sin direcciones exactas por seguridad, según criterio de aceptación)
+
+// Catálogo de tipos de emergencia según los códigos de llamado
+// usados por la compañía (claves 10-X). Se usa en el selector al
+// registrar una nueva emergencia.
+export const tiposEmergencia = [
+  { clave: '10-0', nombre: 'Incendio Estructural' },
+  { clave: '10-1', nombre: 'Fuego en Vehículos' },
+  { clave: '10-2', nombre: 'Pastizales o Basura' },
+  { clave: '10-3', nombre: 'Rescate de Personas' },
+  { clave: '10-4', nombre: 'Rescate Vehicular' },
+  { clave: '10-5', nombre: 'Materiales Peligrosos' },
+  { clave: '10-6', nombre: 'Emanación de Gases' },
+  { clave: '10-7', nombre: 'Accidentes Eléctricos' },
+  { clave: 'OTRO', nombre: 'Otros llamados' },
+]
+
 export const emergencias = [
   {
     id: 'A-1042',
