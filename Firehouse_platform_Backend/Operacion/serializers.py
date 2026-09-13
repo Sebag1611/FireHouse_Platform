@@ -40,3 +40,31 @@ class TripulacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tripulacion
         fields = '__all__'
+
+class MaterialMayorMapaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaterialMayor
+        fields = [
+            'id_material',
+            'nombre',
+            'especialidad',
+            'estado',
+            'latitud',
+            'longitud',
+            'ultima_actualizacion'
+        ]
+
+
+class HistorialPosicionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HistorialPosicion
+        fields = ['id_historial', 'material', 'latitud', 'longitud', 'timestamp']
+
+
+class ActualizarPosicionSerializer(serializers.Serializer):
+    latitud = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitud = serializers.DecimalField(max_digits=9, decimal_places=6)
+
+
+class CambiarEstadoSerializer(serializers.Serializer):
+    estado = serializers.CharField(max_length=50)
