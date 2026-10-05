@@ -1,6 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSesion } from '../../context/SesionContext' 
-import { bomberos as bomberosData } from '../../../../data/personal'
 import { getRango, getNivel } from '../../../../data/roles' 
 import { IconoLapiz, IconoOjo, IconoGrupo } from '../../../../components/ui/Icono'
 import FormCrearPersonal from './FormCrearPersonal'
@@ -14,8 +13,9 @@ const estadoBombero = {
 }
 
 export default function Personal() {
-  const { rango, tipo } = useSesion()
-  
+  const { rut, rango, tipo } = useSesion()
+  const API_URL = import.meta.env.VITE_API_URL
+
   const rangoActual = rango ? rango.toLowerCase() : ''
   const tipoActual = tipo ? tipo.toLowerCase() : ''
   const puedeModificar = ['capitán', 'capitan', 'director'].includes(rangoActual) || ['capitán', 'capitan', 'director'].includes(tipoActual)
@@ -23,12 +23,66 @@ export default function Personal() {
   const editar = puedeModificar
   const crear = puedeModificar 
 
-  const [bomberos, setBomberos] = useState(bomberosData)
+  const [bomberos, setBomberos] = useState([])
   const [creando, setCreando] = useState(false)
 
-  const agregarPersona = (persona) => {
-    setBomberos((prev) => [...prev, { ...persona, id: prev.length + 1, estado: 'activo' }])
-    setCreando(false)
+  // 1. GET: Cargar bomberos desde Django/Supabase al iniciar
+  useEffect(() => {
+    const cargarPersonal = async () => {
+      try {
+        const respuesta = await fetch(`${API_URL}/api/Administracion/Personal/listar/`)
+        if (respuesta.ok) {
+          const data = await respuesta.json()
+          setBomberos(data)
+        }
+      } catch (error) {
+        console.error("Error al cargar personal:", error)
+      }
+    }
+    cargarPersonal()
+  }, [API_URL])
+
+  // 2. POST: Guardar nuevo bombero en el Backend
+  const agregarPersona = async (formData) => {
+    try {
+      // Ajustamos los datos al formato que exige tu views.py (crear_bombero)
+      const payload = {
+        rut_creador: rut, // El rut del Capitán/Director que está logueado
+        rut: formData.rut,
+        nombres: formData.nombres,
+        apellidos: formData.apellidos,
+        telefono: formData.telefono,
+        correo: formData.correo || "sin_correo@firehouse.cl",
+        contraseña: formData.contraseña || "Bombero123*", // Contraseña temporal por defecto
+        direccion: formData.direccion || "Sin dirección",
+        fecha_ingreso: formData.ingreso || new Date().toISOString().split('T')[0],
+        rango: formData.rango,
+        nivel: "Nivel 1" // Nivel inicial por defecto para nuevos
+      }
+
+      const respuesta = await fetch(`${API_URL}/api/Administracion/crear-bombero/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (respuesta.ok) {
+        // Recargamos o actualizamos la lista local
+        const nuevoBombero = await respuesta.json()
+        setBomberos((prev) => [...prev, {
+          ...payload,
+          nombre: `${payload.nombres} ${payload.apellidos}`,
+          estado: 'activo'
+        }])
+        setCreando(false)
+        alert("Integrante creado exitosamente en la base de datos.")
+      } else {
+        const errorData = await respuesta.json()
+        alert(`Error al crear: ${errorData.error || "Verifica los datos"}`)
+      }
+    } catch (error) {
+      console.error("Error en la petición de creación:", error)
+    }
   }
 
   return (
@@ -65,12 +119,12 @@ export default function Personal() {
                 const nivelData = getNivel(b.rango)
                 const est = estadoBombero[b.estado] ?? estadoBombero.activo
                 return (
-                  <tr key={b.id}>
-                    <td className="tabla__nombre">{b.nombre}</td>
+                  <tr key={b.rut}>
+                    <td className="tabla__nombre">{b.nombre || `${b.nombres} ${b.apellidos}`}</td>
                     <td>{rangoData.numero ? `${rangoData.numero} · ${rangoData.nombre}` : rangoData.nombre}</td>
-                    <td><span className="chip" style={{ '--c': nivelData.color }}>{nivelData.etiqueta}</span></td>
+                    <td><span className="chip" style={{ '--c': nivelData.color }}>{b.nivel || nivelData.etiqueta}</span></td>
                     <td><span className="chip" style={{ '--c': est.color }}>{est.etiqueta}</span></td>
-                    <td>{b.ingreso}</td>
+                    <td>{b.fecha_ingreso}</td>
                     <td>{b.telefono}</td>
                     <td style={{ textAlign: 'right' }}>
                       {editar ? (

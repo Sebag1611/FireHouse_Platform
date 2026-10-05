@@ -5,68 +5,47 @@ import {
 } from '../../../../data/formatoChileno'
 import { rutFormatoValido, telefonoValido, correoValido } from '../../../../data/validaciones'
 
-/**
- * Formulario completo para dar de alta un Bombero o Aspirante.
- * Se muestra como modal y solo lo abren Capitán y Directora.
- *
- * @param {function} onGuardar - Recibe los datos del nuevo integrante.
- * @param {function} onCerrar  - Cierra el formulario sin guardar.
- *
- * Es carcasa: los datos se agregan a la lista en memoria. En
- * producción, este formulario haría un POST al backend.
- */
-
-const TIPOS_SANGRE = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']
-
 export default function FormCrearPersonal({ onGuardar, onCerrar }) {
-  // Un solo objeto de estado con todos los campos del formulario.
   const [form, setForm] = useState({
-    nombre: '',
+    nombres: '',
+    apellidos: '',
     rut: '',
     rango: 'bombero',
+    nivel: 'Nivel 1',
     telefono: '',
-    tipoSangre: 'O+',
+    correo: '',
+    contraseña: 'Pass123', // Contraseña temporal por defecto
     direccion: '',
     nacimiento: '',
     ingreso: '',
-    contactoEmergencia: '',
-    telefonoEmergencia: '',
   })
   const [error, setError] = useState('')
 
-  // Actualiza un campo del formulario por su nombre.
   const cambiar = (campo, valor) => {
     setForm((prev) => ({ ...prev, [campo]: valor }))
     setError('')
   }
 
-  // RUT: mientras escribe solo limpia (números + K); al salir del
-  // campo agrega el guion (formato 12345678-9).
   const cambiarRut = (valor) => cambiar('rut', limpiarRut(valor))
   const salirRut = () =>
     setForm((prev) => ({ ...prev, rut: formatearRutConGuion(prev.rut) }))
 
-  // Teléfonos: al salir del campo, se formatean a +56 9 XXXX XXXX.
   const salirTelefono = (campo) =>
     setForm((prev) => ({ ...prev, [campo]: formatearTelefono(prev[campo]) }))
 
   const guardar = () => {
-    // Campos obligatorios.
-    if (!form.nombre.trim() || !form.rut.trim() || !form.telefono.trim()) {
-      setError('Completa al menos nombre, RUT y teléfono.')
+    if (!form.nombres.trim() || !form.apellidos.trim() || !form.rut.trim() || !form.telefono.trim()) {
+      setError('Completa al menos nombres, apellidos, RUT y teléfono.')
       return
     }
-    // RUT con formato válido (cuerpo-dígito).
     if (!rutFormatoValido(form.rut)) {
       setError('El RUT no tiene un formato válido (ej. 12345678-9).')
       return
     }
-    // Teléfono con al menos 9 dígitos.
     if (!telefonoValido(form.telefono)) {
       setError('El teléfono no es válido (ej. +56 9 1234 5678).')
       return
     }
-    // Correo válido solo si se ingresó (es opcional aquí).
     if (form.correo && !correoValido(form.correo)) {
       setError('El correo no tiene un formato válido.')
       return
@@ -94,12 +73,23 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
         </div>
 
         <div className="form-personal__grid">
-          <label className="campo-form campo-form--ancho">
-            Nombre completo *
+          <label className="campo-form">
+            Nombres *
             <input
-              value={form.nombre}
-              onChange={(e) => cambiar('nombre', e.target.value)}
-              placeholder="Nombre y apellidos"
+              value={form.nombres}
+              onChange={(e) => cambiar('nombres', e.target.value)}
+              placeholder="Nombres"
+              required
+            />
+          </label>
+
+          <label className="campo-form">
+            Apellidos *
+            <input
+              value={form.apellidos}
+              onChange={(e) => cambiar('apellidos', e.target.value)}
+              placeholder="Apellidos"
+              required
             />
           </label>
 
@@ -111,6 +101,7 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
               onBlur={salirRut}
               placeholder="12345678-9"
               maxLength={10}
+              required
             />
           </label>
 
@@ -122,6 +113,23 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
             >
               <option value="bombero">Bombero</option>
               <option value="aspirante">Aspirante</option>
+              <option value="teniente">Teniente</option>
+              <option value="capitán">Capitán</option>
+              <option value="director">Director</option>
+            </select>
+          </label>
+
+          <label className="campo-form">
+            Nivel
+            <select
+              value={form.nivel}
+              onChange={(e) => cambiar('nivel', e.target.value)}
+            >
+              <option value="Nivel 1">Nivel 1</option>
+              <option value="Nivel 2">Nivel 2</option>
+              <option value="Nivel 3">Nivel 3</option>
+              <option value="Nivel 4">Nivel 4</option>
+              <option value="Nivel 5">Nivel 5</option>
             </select>
           </label>
 
@@ -132,19 +140,18 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
               onChange={(e) => cambiar('telefono', e.target.value)}
               onBlur={() => salirTelefono('telefono')}
               placeholder="+56 9 XXXX XXXX"
+              required
             />
           </label>
 
           <label className="campo-form">
-            Tipo de sangre
-            <select
-              value={form.tipoSangre}
-              onChange={(e) => cambiar('tipoSangre', e.target.value)}
-            >
-              {TIPOS_SANGRE.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+            Correo electrónico
+            <input
+              type="email"
+              value={form.correo}
+              onChange={(e) => cambiar('correo', e.target.value)}
+              placeholder="correo@ejemplo.cl"
+            />
           </label>
 
           <label className="campo-form campo-form--ancho">
@@ -171,25 +178,6 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
               type="date"
               value={form.ingreso}
               onChange={(e) => cambiar('ingreso', e.target.value)}
-            />
-          </label>
-
-          <label className="campo-form">
-            Contacto de emergencia
-            <input
-              value={form.contactoEmergencia}
-              onChange={(e) => cambiar('contactoEmergencia', e.target.value)}
-              placeholder="Nombre"
-            />
-          </label>
-
-          <label className="campo-form">
-            Teléfono de emergencia
-            <input
-              value={form.telefonoEmergencia}
-              onChange={(e) => cambiar('telefonoEmergencia', e.target.value)}
-              onBlur={() => salirTelefono('telefonoEmergencia')}
-              placeholder="+56 9 XXXX XXXX"
             />
           </label>
         </div>

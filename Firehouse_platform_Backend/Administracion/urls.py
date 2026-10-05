@@ -5,6 +5,7 @@ urlpatterns = [
        # Gestión de usuarios
     path('crear-aspirante/', views.crear_aspirante),
     path('crear-bombero/', views.crear_bombero),
+    path('Personal/listar/', views.listar_personal),
     path('cambiar-rango/', views.cambiar_rango_bombero),
     
     # Autenticación y sesión

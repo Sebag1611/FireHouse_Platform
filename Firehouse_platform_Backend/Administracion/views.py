@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
+from django.db import transaction
 
 # Importaciones propias
 from Administracion.models import *
@@ -175,69 +176,58 @@ def crear_aspirante(request):
 
 @api_view(['POST'])
 def crear_bombero(request):
-
     rut_creador = request.data.get('rut_creador')
 
-
     if not tiene_permiso_administrativo(rut_creador):
-
         return Response(
-            {
-                "error": "No tiene permisos para crear bomberos"
-            },
+            {"error": "No tiene permisos para crear bomberos"},
             status=status.HTTP_403_FORBIDDEN
         )
 
-
     rut = request.data.get('rut')
 
-
     if not validar_rut(rut):
-
         return Response(
-            {
-                "error": "El RUT ingresado no es válido"
-            },
+            {"error": "El RUT ingresado no es válido"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     rut = formatear_rut(rut)
 
     if Persona.objects.filter(rut=rut).exists():
-
         return Response(
-            {
-                "error": "El RUT ya está registrado"
-            },
+            {"error": "El RUT ya está registrado"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    persona = Persona.objects.create(
+    try:
+        # transaction.atomic() asegura que se guarden ambas tablas o ninguna
+        with transaction.atomic():
+            persona = Persona.objects.create(
+                rut=rut,
+                nombres=request.data.get('nombres'),
+                apellidos=request.data.get('apellidos'),
+                telefono=request.data.get('telefono'),
+                correo=request.data.get('correo'),
+                contraseña=make_password(request.data.get('contraseña')),
+                direccion=request.data.get('direccion')
+            )
 
-        rut=rut,
-        nombres=request.data.get('nombres'),
-        apellidos=request.data.get('apellidos'),
-        telefono=request.data.get('telefono'),
-        correo=request.data.get('correo'),
-
-        contraseña=make_password(
-            request.data.get('contraseña')
-        ),
-
-        direccion=request.data.get('direccion')
-    )
-
-    Bombero.objects.create(
-
-        rut=persona,
-        fecha_ingreso=request.data.get('fecha_ingreso'),
-        rango=request.data.get('rango'),
-        nivel=request.data.get('nivel')
-
-    )
+            Bombero.objects.create(
+                rut=persona,
+                fecha_ingreso=request.data.get('fecha_ingreso'),
+                rango=request.data.get('rango'),
+                nivel=request.data.get('nivel'),
+                estado=True
+            )
+            
+    except Exception as e:
+        return Response(
+            {"error": f"Error en la base de datos: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     return Response(
-
         {
             "mensaje": "Bombero creado correctamente",
             "rut": persona.rut,
@@ -246,7 +236,6 @@ def crear_bombero(request):
             "rango": request.data.get('rango'),
             "nivel": request.data.get('nivel')
         },
-
         status=status.HTTP_201_CREATED
     )
 
@@ -797,3 +786,26 @@ def cambiar_contraseña_recuperada(request):
 
             status=status.HTTP_404_NOT_FOUND
         )
+
+@api_view(['GET'])
+def listar_personal(request):
+    try:
+        bomberos = Bombero.objects.select_related('rut').all()
+        data = []
+        for b in bomberos:
+            data.append({
+                "rut": b.rut.rut,
+                "nombres": b.rut.nombres,
+                "apellidos": b.rut.apellidos,
+                "nombre": f"{b.rut.nombres} {b.rut.apellidos}",
+                "telefono": b.rut.telefono,
+                "correo": b.rut.correo,
+                "direccion": b.rut.direccion,
+                "rango": b.rango,
+                "nivel": b.nivel,
+                "fecha_ingreso": b.fecha_ingreso,
+                "estado": "activo" # O el estado que tengas en tu BD
+            })
+        return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

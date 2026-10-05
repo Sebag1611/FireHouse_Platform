@@ -19,6 +19,7 @@ class Bombero(models.Model):
     fecha_ingreso = models.DateField(null=True, blank=True)
     rango = models.CharField(max_length=100)
     nivel = models.CharField(max_length=100)
+    estado = models.BooleanField(max_length=50, default='activo')
 
     def __str__(self):
         return f"Bombero: {self.rut}"
