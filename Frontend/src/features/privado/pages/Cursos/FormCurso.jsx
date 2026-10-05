@@ -1,25 +1,13 @@
 import { useState } from 'react'
 import { IconoCerrar, IconoCheck, IconoCurso } from '../../../../components/ui/Icono'
 
-/**
- * Formulario para abrir o editar un curso.
- *
- * @param {object|null} curso - Curso a editar, o null para crear.
- * @param {function} onGuardar - Recibe los datos del curso.
- * @param {function} onCerrar  - Cierra sin guardar.
- *
- * El creador NO se pide aquí: al crear, se toma automáticamente del
- * rango de la sesión (lo resuelve la vista Cursos). Al editar, se
- * conserva el creador original.
- */
 export default function FormCurso({ curso, onGuardar, onCerrar }) {
   const esEdicion = Boolean(curso)
 
   const [form, setForm] = useState({
     nombre: curso?.nombre ?? '',
-    fechas: curso?.fechas ?? '',
+    fecha: curso?.fecha ? curso.fecha.substring(0, 16) : '', // Formato YYYY-MM-DDTHH:mm para datetime-local
     cupos: curso?.cupos ?? 4,
-    descripcion: curso?.descripcion ?? '',
   })
   const [error, setError] = useState('')
 
@@ -29,21 +17,20 @@ export default function FormCurso({ curso, onGuardar, onCerrar }) {
   }
 
   const guardar = () => {
-    if (!form.nombre.trim() || !form.fechas.trim()) {
-      setError('Completa al menos el nombre y las fechas del curso.')
+    if (!form.nombre.trim() || !form.fecha) {
+      setError('Completa el nombre y la fecha/hora del curso.')
       return
     }
     const cupos = Number(form.cupos) || 1
     // Al editar, no permitir bajar los cupos por debajo de los ya inscritos.
-    if (esEdicion && cupos < curso.inscritos.length) {
+    if (esEdicion && curso.inscritos && cupos < curso.inscritos.length) {
       setError(`Ya hay ${curso.inscritos.length} inscritos; los cupos no pueden ser menos.`)
       return
     }
     onGuardar({
-      ...(esEdicion ? { id: curso.id } : {}),
+      ...(esEdicion ? { id_curso: curso.id_curso || curso.id } : {}),
       nombre: form.nombre.trim(),
-      fechas: form.fechas.trim(),
-      descripcion: form.descripcion.trim(),
+      fecha: form.fecha,
       cupos,
     })
   }
@@ -69,11 +56,11 @@ export default function FormCurso({ curso, onGuardar, onCerrar }) {
           </label>
 
           <label className="campo-form">
-            Fechas *
+            Fecha y Hora *
             <input
-              value={form.fechas}
-              onChange={(e) => cambiar('fechas', e.target.value)}
-              placeholder="Ej: 18 al 19 de septiembre"
+              type="datetime-local"
+              value={form.fecha}
+              onChange={(e) => cambiar('fecha', e.target.value)}
             />
           </label>
 
@@ -84,16 +71,6 @@ export default function FormCurso({ curso, onGuardar, onCerrar }) {
               min={1}
               value={form.cupos}
               onChange={(e) => cambiar('cupos', e.target.value)}
-            />
-          </label>
-
-          <label className="campo-form">
-            Breve descripción
-            <textarea
-              rows={3}
-              value={form.descripcion}
-              onChange={(e) => cambiar('descripcion', e.target.value)}
-              placeholder="Ej: Cuartel Segunda Compañía · Se requiere nivel inicial."
             />
           </label>
 

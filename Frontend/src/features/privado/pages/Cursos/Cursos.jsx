@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { useSesion } from '../../context/SesionContext' // Ruta nueva
-import { cursos as cursosData } from '../../../../data/personal'
-import { getRango } from '../../../../data/roles' // Quitamos PERMISOS
+import { useState, useEffect } from 'react'
+import { useSesion } from '../../context/SesionContext'
+import { getRango } from '../../../../data/roles'
 import {
   IconoCurso, IconoCheck, IconoOjo, IconoCandado,
   IconoLapiz, IconoBasura, IconoPersona, IconoDescargaPDF,
@@ -11,67 +10,167 @@ import { descargarCursoPDF } from './descargarCursoPDF'
 import '../../estilos-panel.css'
 import './Cursos.css'
 
+// ELIMINADO: import { cursos as cursosData } from '../../../../data/personal'
+
 export default function Cursos() {
-  // 1. Traemos tus datos de Django
-  const { nombreCompleto, rango, tipo } = useSesion()
+  // EXTRAEMOS EL RUT (o ID) de la sesión para enviarlo a Django al crear o inscribir
+  const { nombreCompleto, rango, tipo, rut } = useSesion() 
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const rangoActual = rango ? rango.toLowerCase() : ''
   const tipoActual = tipo ? tipo.toLowerCase() : ''
 
-  // 2. Definimos quién es oficial (para crear cursos o ver a los inscritos)
   const esOficial = ['capitán', 'capitan', 'director', 'teniente'].includes(rangoActual) || ['capitán', 'capitan', 'director', 'teniente'].includes(tipoActual)
 
   const gestiona = esOficial      
-  const puedeInscribirse = true // Todos los bomberos pueden inscribirse
+  const puedeInscribirse = true 
   const veInscritos = esOficial 
 
-  const [cursos, setCursos] = useState(cursosData)
+  // INICIAMOS VACÍO: La data ahora vendrá del backend
+  const [cursos, setCursos] = useState([])
   const [editando, setEditando] = useState(null)
 
-  // 3. Revisamos si tu nombre real de Django ya está en la lista
-  const estoyInscrito = (curso) => curso.inscritos.includes(nombreCompleto)
-
-  const alternarInscripcion = (idCurso) => {
-    setCursos((prev) =>
-      prev.map((c) => {
-        if (c.id !== idCurso) return c
-        const yaEsta = c.inscritos.includes(nombreCompleto)
-        
-        if (!yaEsta && c.inscritos.length >= c.cupos) return c
-        return {
-          ...c,
-          inscritos: yaEsta
-            ? c.inscritos.filter((n) => n !== nombreCompleto)
-            : [...c.inscritos, nombreCompleto],
+  // ==========================================
+  // 1. GET: OBTENER CURSOS AL CARGAR LA VISTA
+  // ==========================================
+  useEffect(() => {
+    const cargarCursos = async () => {
+      try {
+        const respuesta = await fetch(`${API_URL}/api/Operacion/cursos/`);
+        if (respuesta.ok) {
+          const data = await respuesta.json();
+          setCursos(data);
         }
-      })
-    )
-  }
+      } catch (error) {
+        console.error("Error al cargar cursos desde el backend:", error);
+      }
+    };
+    cargarCursos();
+  }, [API_URL]);
 
-  const guardarCurso = (datos) => {
-    if (datos.id) {
-      setCursos((prev) => prev.map((c) => (c.id === datos.id ? { ...c, ...datos } : c)))
-    } else {
-      setCursos((prev) => [
-        {
-          ...datos,
-          id: `curso-${Date.now()}`,
-          creadorRangoId: rangoActual || 'oficial',
-          inscritos: [],
-        },
-        ...prev,
-      ])
+
+  // ==========================================
+  // 2. POST: INSCRIBIR BOMBERO
+  // ==========================================
+  const estoyInscrito = (curso) => curso.inscritos?.includes(nombreCompleto)
+
+  const alternarInscripcion = async (idCurso) => {
+    const cursoActual = cursos.find(c => c.id_curso === idCurso || c.id === idCurso);
+    const yaEsta = estoyInscrito(cursoActual);
+
+    // Si ya está inscrito, se requiere un endpoint DELETE en Django para anular (si lo permites)
+    if (yaEsta) {
+      alert("Ya estás inscrito en este curso."); 
+      return; 
     }
-    setEditando(null)
+
+    try {
+      // Usamos los mismos nombres que definiste en request.data.get() de tu vista Django
+      const respuesta = await fetch(`${API_URL}/api/Operacion/cursos/inscribir/`, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_curso: idCurso,
+          rut_bombero: rut // Pasamos el RUT desde la sesión
+        })
+      });
+
+      if (respuesta.ok) {
+        // Actualizamos React instantáneamente sin tener que recargar la página
+        setCursos((prev) =>
+          prev.map((c) => {
+            const currId = c.id_curso || c.id;
+            if (currId !== idCurso) return c;
+            
+            const nuevosInscritos = [...(c.inscritos || []), nombreCompleto];
+            return {
+              ...c,
+              inscritos: nuevosInscritos,
+              // Si se llenó con esta inscripción, lo cerramos visualmente
+              estado: nuevosInscritos.length >= c.cupos ? "CERRADO" : c.estado
+            }
+          })
+        )
+      } else {
+        const errorData = await respuesta.json();
+        alert(`Error: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error al inscribirse:", error);
+    }
   }
 
-  const eliminarCurso = (idCurso) => {
+
+  // ==========================================
+  // 3. POST / PUT: GUARDAR O EDITAR CURSO
+  // ==========================================
+  const guardarCurso = async (datos) => {
+    const esNuevo = !datos.id && !datos.id_curso;
+    
+    // CORRECCIÓN DE RUTAS: Apuntamos exactamente a las URLs de tu Django
+    const url = esNuevo 
+      ? `${API_URL}/api/Operacion/Cursos/crear/` 
+      : `${API_URL}/api/Operacion/Cursos/editar/${datos.id || datos.id_curso}/`; // Necesitarás crear esta vista en Django luego
+      
+    const metodo = esNuevo ? 'POST' : 'PUT';
+
+    const payload = {
+      nombre: datos.nombre,
+      fecha: datos.fecha, 
+      cupos: datos.cupos,
+      estado: datos.estado || "ABIERTO",
+      oficial_a_cargo: rut 
+    };
+
+    try {
+      const respuesta = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (respuesta.ok) {
+        const cursoGuardadoInfo = await respuesta.json(); // Esto recibe {"mensaje": "...", "data": {...}}
+        const cursoGuardado = cursoGuardadoInfo.data; // Extraemos la data real
+
+        if (esNuevo) {
+          setCursos((prev) => [cursoGuardado, ...prev]);
+        } else {
+          setCursos((prev) => prev.map((c) => (c.id_curso === cursoGuardado.id_curso ? cursoGuardado : c)));
+        }
+        setEditando(null);
+      } else {
+        const errorData = await respuesta.json();
+        console.error("Error del backend:", errorData);
+        alert("Hubo un problema al guardar el curso en la base de datos. Revisa la consola.");
+      }
+    } catch (error) {
+      console.error("Error al guardar el curso:", error);
+    }
+  }
+
+
+  // ==========================================
+  // 4. DELETE: ELIMINAR CURSO
+  // ==========================================
+  const eliminarCurso = async (idCurso) => {
     if (!window.confirm('¿Eliminar este curso? Esta acción no se puede deshacer.')) return
-    setCursos((prev) => prev.filter((c) => c.id !== idCurso))
+    
+    try {
+      const respuesta = await fetch(`${API_URL}/cursos/${idCurso}/`, {
+        method: 'DELETE'
+      });
+
+      if (respuesta.ok) {
+        setCursos((prev) => prev.filter((c) => c.id_curso !== idCurso && c.id !== idCurso))
+      }
+    } catch (error) {
+      console.error("Error al eliminar el curso:", error);
+    }
   }
 
   const descargarPDF = (curso) => {
-    const creador = getRango(curso.creadorRangoId) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
+    const creador = getRango(curso.oficial_a_cargo) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
     descargarCursoPDF(curso, creador)
   }
 
@@ -93,8 +192,7 @@ export default function Cursos() {
       {puedeInscribirse ? (
         <div className="nota-info">
           <IconoCheck width={18} />
-          Inscríbete en los cursos disponibles. Los nombres se revelan cuando el
-          curso completa sus cupos.
+          Inscríbete en los cursos disponibles. Los nombres se revelan cuando el curso completa sus cupos.
         </div>
       ) : (
         <div className="nota-info">
@@ -111,15 +209,20 @@ export default function Cursos() {
 
       <div className="cursos-grid">
         {cursos.map((curso) => {
-          const creador = getRango(curso.creadorRangoId) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
-          const anotados = curso.inscritos.length
-          const cerrado = anotados >= curso.cupos
+          // Adaptamos los nombres de variables según tu Django backend
+          const idActual = curso.id_curso || curso.id;
+          const creador = getRango(curso.oficial_a_cargo) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
+          const listaInscritos = curso.inscritos || [];
+          const anotados = listaInscritos.length;
+          
+          // Verificamos el estado contra la BD de Django y los cupos
+          const cerrado = curso.estado === "CERRADO" || anotados >= curso.cupos;
           
           const mostrarLista = cerrado || veInscritos
           const inscrito = estoyInscrito(curso)
 
           return (
-            <article className={`curso-card ${cerrado ? 'curso-card--cerrado' : ''}`} key={curso.id}>
+            <article className={`curso-card ${cerrado ? 'curso-card--cerrado' : ''}`} key={idActual}>
               <header className="curso-card__head">
                 <div className="curso-card__titulo">
                   <IconoCurso width={20} />
@@ -137,13 +240,11 @@ export default function Cursos() {
               </header>
 
               <p className="curso-card__creador">
-                {creador.numero ? `${creador.nombre} ${creador.persona}` : creador.persona}
-                {' '}abrió este curso
+                {creador.numero ? `${creador.nombre} ${creador.persona}` : creador.persona} abrió este curso
               </p>
 
               <div className="curso-card__datos">
-                <span><b>Fechas:</b> {curso.fechas}</span>
-                <span className="curso-card__desc">{curso.descripcion}</span>
+                <span><b>Fechas:</b> {new Date(curso.fecha).toLocaleString()}</span>
               </div>
 
               <div className="curso-card__cupos">
@@ -167,10 +268,10 @@ export default function Cursos() {
                       <em className="curso-card__solo-oficial"> (visible solo para oficiales)</em>
                     )}
                   </span>
-                  {curso.inscritos.length > 0 ? (
+                  {listaInscritos.length > 0 ? (
                     <ul>
-                      {curso.inscritos.map((n) => (
-                        <li key={n}>{n}</li>
+                      {listaInscritos.map((n, i) => (
+                        <li key={i}>{n}</li>
                       ))}
                     </ul>
                   ) : (
@@ -185,18 +286,14 @@ export default function Cursos() {
 
               <footer className="curso-card__acciones">
                 {gestiona && (
-                  <button
-                    className="btn-mini"
-                    onClick={() => descargarPDF(curso)}
-                    title="Descargar curso como PDF"
-                  >
+                  <button className="btn-mini" onClick={() => descargarPDF(curso)} title="Descargar PDF">
                     <IconoDescargaPDF width={13} /> PDF
                   </button>
                 )}
                 {puedeInscribirse && (!cerrado || inscrito) && (
                   <button
                     className={`btn-mini ${inscrito ? 'btn-mini--peligro' : 'btn-mini--primario'}`}
-                    onClick={() => alternarInscripcion(curso.id)}
+                    onClick={() => alternarInscripcion(idActual)}
                   >
                     {inscrito ? 'Anular inscripción' : 'Inscribirme'}
                   </button>
@@ -206,7 +303,7 @@ export default function Cursos() {
                     <button className="btn-mini" onClick={() => setEditando(curso)}>
                       <IconoLapiz width={13} /> Editar
                     </button>
-                    <button className="btn-mini btn-mini--peligro" onClick={() => eliminarCurso(curso.id)}>
+                    <button className="btn-mini btn-mini--peligro" onClick={() => eliminarCurso(idActual)}>
                       <IconoBasura width={13} /> Eliminar
                     </button>
                   </>

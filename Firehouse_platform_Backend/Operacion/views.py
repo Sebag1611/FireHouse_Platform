@@ -38,7 +38,8 @@ def Obtener_Material_Mayor(request):
 
 @api_view(['GET'])
 def Listar_Material_Mayor(request):
-    materiales = MaterialMayor.objects.all()
+    materiales = MaterialMayor.objects.all().order_by('id_material')
+    
     serializer = MaterialMayorSerializer(materiales, many=True)
     
     datos = [
@@ -56,10 +57,23 @@ def Listar_Material_Mayor(request):
     
     return Response(datos, status=status.HTTP_200_OK)
 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Curso, Inscripcion_Curso
+@api_view(['PUT'])
+def Editar_material_mayor(request, id_material):
+    try:
+        material = MaterialMayor.objects.get(id_material=id_material)
+    except MaterialMayor.DoesNotExist:
+        return Response(
+            {"error": "Material mayor no encontrado."}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    serializer = MaterialMayorSerializer(material, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"mensaje": "Estado actualizado con éxito", "data": serializer.data}, 
+            status=status.HTTP_200_OK
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def inscribir_bombero(request):
@@ -91,3 +105,26 @@ def inscribir_bombero(request):
         curso.save()
 
     return Response({"mensaje": "Inscrito con éxito"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def listar_cursos(request):
+    # Traemos todos los cursos de la base de datos (puedes ordenarlos por fecha si quieres)
+    cursos = Curso.objects.all().order_by('-fecha')
+    serializer = CursoSerializer(cursos, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def crear_curso(request):
+    # Recibe los datos desde React (nombre, oficial_a_cargo, fecha, cupos)
+    serializer = CursoSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"mensaje": "Curso creado con éxito", "data": serializer.data}, 
+            status=status.HTTP_201_CREATED
+        )
+        
+    # Si falta algún dato o el formato es incorrecto, devuelve el error
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
