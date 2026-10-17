@@ -60,8 +60,44 @@ export default function Cursos() {
 
     // Si ya está inscrito, se requiere un endpoint DELETE en Django para anular (si lo permites)
     if (yaEsta) {
-      alert("Ya estás inscrito en este curso."); 
-      return; 
+      if (!window.confirm("¿Seguro que deseas anular tu inscripción a este curso?")) return;
+
+      try {
+        const respuesta = await fetch(`${API_URL}/api/Operacion/cursos/desinscribir/`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_curso: idCurso,
+            rut_bombero: rut // Pasamos el RUT desde la sesión
+          })
+        });
+
+        if (respuesta.ok) {
+          // Actualizamos React: sacamos al usuario de la lista de inscritos
+          setCursos((prev) =>
+            prev.map((c) => {
+              const currId = c.id_curso || c.id;
+              if (currId !== idCurso) return c;
+              
+              // Filtramos para quitar el nombre del usuario actual
+              const nuevosInscritos = (c.inscritos || []).filter(nombre => nombre !== nombreCompleto);
+              
+              return {
+                ...c,
+                inscritos: nuevosInscritos,
+                // Si al salir se libera un cupo, reabrimos el curso visualmente
+                estado: nuevosInscritos.length < c.cupos ? "ABIERTO" : c.estado
+              }
+            })
+          );
+        } else {
+          const errorData = await respuesta.json();
+          alert(`Error al desinscribir: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error("Error al desinscribirse:", error);
+      }
+      return; // Terminamos la ejecución aquí si se desinscribió
     }
 
     try {
@@ -157,7 +193,7 @@ export default function Cursos() {
     if (!window.confirm('¿Eliminar este curso? Esta acción no se puede deshacer.')) return
     
     try {
-      const respuesta = await fetch(`${API_URL}/cursos/${idCurso}/`, {
+      const respuesta = await fetch(`${API_URL}/api/Operacion/cursos/eliminar/${idCurso}/`, {
         method: 'DELETE'
       });
 

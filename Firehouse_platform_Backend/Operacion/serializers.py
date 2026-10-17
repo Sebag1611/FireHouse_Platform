@@ -1,5 +1,16 @@
 from rest_framework import serializers
-from Operacion.models import *
+# from Operacion.models import *
+from Operacion.models import (
+    Actividad,
+    Asistencia,
+    Emergencia,
+    MaterialMayor,
+#    HistorialPosicion,
+    Despacho,
+    Tripulacion,
+    Curso,
+    Inscripcion_Curso
+)
 from Administracion.serializers import PersonaSerializer, BomberoSerializer
 
 class ActividadSerializer(serializers.ModelSerializer):
@@ -53,3 +64,55 @@ class CursoSerializer(serializers.ModelSerializer):
         # Esto busca todos los bomberos inscritos en este curso específico
         # Asume que tu modelo Bombero tiene un campo que lo identifica (ej: __str__ o 'nombre')
         return [inscripcion.bombero.__str__() for inscripcion in obj.inscritos.all()]
+
+class MaterialMayorMapaSerializer(serializers.ModelSerializer):
+    # coerce_to_string=False: devuelve numeros (-33.45) y no textos ("-33.450000"),
+    # que es lo que esperan Leaflet, Google Maps, etc.
+    latitud = serializers.DecimalField(
+        max_digits=9, decimal_places=6, coerce_to_string=False, read_only=True
+    )
+    longitud = serializers.DecimalField(
+        max_digits=9, decimal_places=6, coerce_to_string=False, read_only=True
+    )
+
+    class Meta:
+        model = MaterialMayor
+        fields = [
+            'id_material',
+            'nombre',
+            'especialidad',
+            'estado',
+            'latitud',
+            'longitud',
+            'ultima_actualizacion',
+        ]
+
+
+#class HistorialPosicionSerializer(serializers.ModelSerializer):
+#    latitud = serializers.DecimalField(#
+#        max_digits=9, decimal_places=6, coerce_to_string=False, read_only=True
+#    )
+#    longitud = serializers.DecimalField(#
+#        max_digits=9, decimal_places=6, coerce_to_string=False, read_only=True
+#    )
+#
+#    class Meta:
+#        model = HistorialPosicion
+#        fields = ['id_historial', 'material', 'latitud', 'longitud', 'timestamp']
+#        read_only_fields = ['id_historial', 'timestamp']
+
+
+class ActualizarPosicionSerializer(serializers.Serializer):
+    # Rangos validos de coordenadas: evita guardar posiciones imposibles
+    latitud = serializers.DecimalField(
+        max_digits=9, decimal_places=6, min_value=-90, max_value=90
+    )
+    longitud = serializers.DecimalField(
+        max_digits=9, decimal_places=6, min_value=-180, max_value=180
+    )
+
+
+class CambiarEstadoSerializer(serializers.Serializer):
+    # Cuando definas los estados oficiales, cambia esto por un ChoiceField:
+    # estado = serializers.ChoiceField(choices=['Disponible', 'En emergencia', 'Fuera de servicio'])
+    estado = serializers.CharField(max_length=50, allow_blank=False, trim_whitespace=True)

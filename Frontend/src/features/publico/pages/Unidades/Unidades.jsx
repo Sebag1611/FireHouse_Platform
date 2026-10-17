@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { unidades, ESTADOS_OPERATIVOS } from '../../../../data/contenidoPublico'
+import { useState, useEffect } from 'react'
+import { ESTADOS_OPERATIVOS } from '../../../../data/contenidoPublico'
 import EstadoBadge from '../../../../components/ui/EstadoBadge'
 import { IconoCamion } from '../../../../components/ui/Icono'
 import './Unidades.css'
@@ -14,6 +14,24 @@ const filtros = [
 
 export default function Unidades() {
   const [filtro, setFiltro] = useState('todos')
+  const [unidades, setUnidades] = useState([]) // Inicia vacío esperando al backend
+  const API_URL = import.meta.env.VITE_API_URL
+
+  // 1. GET: OBTENER MATERIAL MAYOR AL CARGAR LA VISTA
+  useEffect(() => {
+    const cargarUnidades = async () => {
+      try {
+        const respuesta = await fetch(`${API_URL}/api/Operacion/MaterialMayor/listar/`)
+        if (respuesta.ok) {
+          const data = await respuesta.json()
+          setUnidades(data)
+        }
+      } catch (error) {
+        console.error("Error al cargar las unidades:", error)
+      }
+    }
+    cargarUnidades()
+  }, [API_URL])
 
   const lista =
     filtro === 'todos'
@@ -67,17 +85,19 @@ export default function Unidades() {
           ) : (
             <div className="unidades-grid">
               {lista.map((u) => (
-                <article className="unidad-card" key={u.id}>
+                <article className="unidad-card" key={u.id_material}>
                   <div className="unidad-card__media">
                     <IconoCamion width={48} />
-                    <span className="unidad-card__codigo">{u.id}</span>
+                    {/* Reemplazamos u.id por u.id_material según Django */}
+                    <span className="unidad-card__codigo">{u.id_material}</span>
                   </div>
                   <div className="unidad-card__cuerpo">
                     <div className="unidad-card__top">
                       <h3>{u.nombre}</h3>
                       <EstadoBadge estado={u.estado} />
                     </div>
-                    <span className="unidad-card__tipo">{u.tipo}</span>
+                    {/* Reemplazamos u.tipo por u.especialidad según Django */}
+                    <span className="unidad-card__tipo">{u.especialidad}</span>
                     <p>{u.descripcion}</p>
                     <dl className="unidad-card__specs">
                       <div>

@@ -14,7 +14,7 @@ export default function FormCrearPersonal({ onGuardar, onCerrar }) {
     nivel: 'Nivel 1',
     telefono: '',
     correo: '',
-    contraseña: 'Pass123', // Contraseña temporal por defecto
+    contraseña: 'pass123', // Contraseña temporal por defecto
     direccion: '',
     nacimiento: '',
     ingreso: '',

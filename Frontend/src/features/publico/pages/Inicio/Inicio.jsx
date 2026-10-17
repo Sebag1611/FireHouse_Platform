@@ -1,9 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   turnoActual,
-  emergencias,
-  unidades,
-  noticias,
+  noticias, // Eliminamos 'unidades' de la importación estática
 } from '../../../../data/contenidoPublico'
 import EstadoBadge from '../../../../components/ui/EstadoBadge'
 import EmergenciasResumen from '../../../../components/ui/EmergenciasResumen'
@@ -19,7 +18,44 @@ import {
 import './Inicio.css'
 
 export default function Inicio() {
-  const disponibles = unidades.filter((u) => u.estado === 'disponible').length
+  const API_URL = import.meta.env.VITE_API_URL
+  
+  // Estados para los datos de la base de datos
+  const [emergenciasRecientes, setEmergenciasRecientes] = useState([])
+  const [listaUnidades, setListaUnidades] = useState([])
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      // 1. Cargar Emergencias
+      try {
+        const resEmergencias = await fetch(`${API_URL}/api/Operacion/emergencias/listar/`)
+        if (resEmergencias.ok) {
+          const dataEmergencias = await resEmergencias.json()
+          setEmergenciasRecientes(dataEmergencias.slice(0, 4)) 
+        }
+      } catch (error) {
+        console.error("Error al cargar emergencias en el inicio:", error)
+      }
+
+      // 2. Cargar Unidades (Material Mayor)
+      try {
+        const resUnidades = await fetch(`${API_URL}/api/Operacion/MaterialMayor/listar/`)
+        if (resUnidades.ok) {
+          const dataUnidades = await resUnidades.json()
+          setListaUnidades(dataUnidades) 
+        }
+      } catch (error) {
+        console.error("Error al cargar las unidades en el inicio:", error)
+      }
+    }
+    
+    cargarDatos()
+  }, [API_URL])
+
+  // Calculamos dinámicamente las unidades disponibles usando la BD para la estadística de arriba
+  const disponibles = listaUnidades.filter(
+    (u) => u.estado && u.estado.toLowerCase() === 'disponible'
+  ).length
 
   return (
     <>
@@ -182,7 +218,7 @@ export default function Inicio() {
               <span>Fecha</span>
               <span>Hora</span>
             </div>
-            {emergencias.map((e) => (
+            {emergenciasRecientes.map((e) => (
               <div className="emergencias__fila" role="row" key={e.id}>
                 <span className="emergencias__clave">
                   <i aria-hidden="true" /> {e.clave}
@@ -202,11 +238,12 @@ export default function Inicio() {
           <span className="eyebrow">Material mayor</span>
           <h2 className="titulo-seccion">Nuestras unidades</h2>
           <div className="unidades-preview">
-            {unidades.slice(0, 3).map((u) => (
-              <article className="unidad-mini" key={u.id}>
-                <div className="unidad-mini__id">{u.id}</div>
-                <h3>{u.nombre}</h3>
-                <p>{u.tipo}</p>
+            {listaUnidades.slice(0, 3).map((u) => (
+              <article className="unidad-mini" key={u.id || u.codigo}>
+                {/* Ajustamos las propiedades según cómo llegan desde el backend */}
+                <div className="unidad-mini__id">{u.codigo || u.id}</div>
+                <h3>{u.nombre || u.codigo}</h3>
+                <p>{u.tipo || u.descripcion}</p>
                 <EstadoBadge estado={u.estado} />
               </article>
             ))}
@@ -256,6 +293,8 @@ export default function Inicio() {
 }
 
 function formatearFecha(iso) {
+  // Verificamos que la fecha exista para no romper el código
+  if (!iso) return ''
   return new Date(iso + 'T00:00:00').toLocaleDateString('es-CL', {
     day: '2-digit',
     month: 'short',

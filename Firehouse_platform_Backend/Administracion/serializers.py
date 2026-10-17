@@ -41,3 +41,110 @@ class Equipo_AsignadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equipo_Asignado
         fields = '__all__'
+
+class Encuesta_GuardiaSerializer(serializers.ModelSerializer):
+
+    creado_por = BomberoSerializer(read_only=True)
+
+    class Meta:
+        model = Encuesta_Guardia
+        fields = '__all__'
+
+
+class GuardiaSerializer(serializers.ModelSerializer):
+
+    encuesta = Encuesta_GuardiaSerializer(read_only=True)
+
+    oficial_a_cargo = BomberoSerializer(read_only=True)
+
+    maquinista = BomberoSerializer(read_only=True)
+
+    class Meta:
+        model = Guardia
+        fields = '__all__'
+
+
+class Inscripcion_GuardiaSerializer(serializers.ModelSerializer):
+
+    bombero = BomberoSerializer(read_only=True)
+
+    guardia = GuardiaSerializer(read_only=True)
+
+    class Meta:
+        model = Inscripcion_Guardia
+        fields = '__all__'
+
+
+class Tarea_GuardiaSerializer(serializers.ModelSerializer):
+
+    guardia = GuardiaSerializer(read_only=True)
+
+    class Meta:
+        model = Tarea_Guardia
+        fields = '__all__'
+
+
+class Instruccion_GuardiaSerializer(serializers.ModelSerializer):
+
+    encuesta = Encuesta_GuardiaSerializer(read_only=True)
+
+    class Meta:
+        model = Instruccion_Guardia
+        fields = '__all__'
+
+
+# SERIALIZER ASISTENCIA DE GUARDIA
+
+class Asistencia_GuardiaSerializer(serializers.ModelSerializer):
+
+    inscripcion = Inscripcion_GuardiaSerializer(read_only=True)
+
+    class Meta:
+
+        model = Asistencia_Guardia
+
+        fields = '__all__'
+
+# SERIALIZER RECUPERACIÓN DE CONTRASEÑA
+
+class RecuperacionContraseñaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = RecuperacionContraseña
+
+        fields = "__all__"
+
+# SERIALIZER IMAGEN PUBLICA
+
+class Imagen_PublicaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Imagen_Publica
+        fields = '__all__'
+
+# SERIALIZER DISPONIBILIDAD DEL BOMBERO
+
+class Jornada_Laboral_BomberoSerializer(serializers.ModelSerializer):
+
+    bombero = BomberoSerializer(read_only=True)
+
+
+    class Meta:
+
+        model = Jornada_Laboral_Bombero
+
+        fields = '__all__'
+
+# SERIALIZER EXCEPCION DE DISPONIBILIDAD
+
+class Excepcion_DisponibilidadSerializer(serializers.ModelSerializer):
+
+    bombero = BomberoSerializer(read_only=True)
+
+
+    class Meta:
+
+        model = Excepcion_Disponibilidad
+
+        fields = '__all__'

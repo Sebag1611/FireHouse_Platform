@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useSesion } from '../../context/SesionContext' 
 import { resumenPanel, comunicados, planillasTurno } from '../../../../data/personal'
 import { IconoGrupo, IconoCamion, IconoCalendario, IconoBandeja } from '../../../../components/ui/Icono'
@@ -6,10 +7,47 @@ import '../../estilos-panel.css'
 
 export default function Dashboard() {
   const { nombreCompleto, rango, nivel, tipo } = useSesion()
+  
+  const API_URL = import.meta.env.VITE_API_URL
+  
+  // Estados para los contadores reales
+  const [totalBomberos, setTotalBomberos] = useState(resumenPanel.bomberosActivos)
+  const [unidadesDisponibles, setUnidadesDisponibles] = useState(resumenPanel.unidadesDisponibles)
 
+  // Efecto para consultar a la base de datos al abrir el panel
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        // 1. Cargar Bomberos
+        const resBomberos = await fetch(`${API_URL}/api/Administracion/Personal/listar/`)
+        if (resBomberos.ok) {
+          const dataBomberos = await resBomberos.json()
+          setTotalBomberos(dataBomberos.length)
+        }
+
+        // 2. Cargar Unidades (Material Mayor)
+        // Asegúrate de que esta ruta sea la que usaste para el catálogo público
+        const resUnidades = await fetch(`${API_URL}/api/Operacion/MaterialMayor/listar/`)
+        if (resUnidades.ok) {
+          const dataUnidades = await resUnidades.json()
+          // Filtramos solo los camiones que tengan su estado como "disponible"
+          const disponibles = dataUnidades.filter(
+            (u) => u.estado && u.estado.toLowerCase() === 'disponible'
+          ).length
+          setUnidadesDisponibles(disponibles)
+        }
+      } catch (error) {
+        console.error("Error al cargar los datos del dashboard:", error)
+      }
+    }
+    
+    cargarDatos()
+  }, [API_URL])
+
+  // Actualizamos la tarjeta para que use ambos contadores dinámicos
   const stats = [
-    { valor: resumenPanel.bomberosActivos, label: 'Bomberos activos', clase: 'stat-card--verde', icono: IconoGrupo },
-    { valor: resumenPanel.unidadesDisponibles, label: 'Unidades disponibles', clase: 'stat-card--claro', icono: IconoCamion },
+    { valor: totalBomberos, label: 'Bomberos activos', clase: 'stat-card--verde', icono: IconoGrupo },
+    { valor: unidadesDisponibles, label: 'Unidades disponibles', clase: 'stat-card--claro', icono: IconoCamion },
     { valor: resumenPanel.turnosAbiertos, label: 'Turnos abiertos', clase: 'stat-card--ambar', icono: IconoCalendario },
     { valor: resumenPanel.postulacionesPendientes, label: 'Postulaciones pendientes', clase: 'stat-card--rojo', icono: IconoBandeja },
   ]

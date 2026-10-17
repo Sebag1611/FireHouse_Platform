@@ -1,64 +1,83 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSesion } from '../../context/SesionContext'
-import { emergencias as emergenciasData, tiposEmergencia } from '../../../../data/contenidoPublico'
+import { tiposEmergencia } from '../../../../data/contenidoPublico'
 import { IconoFuego, IconoSubir, IconoOjo, IconoReloj, IconoUbicacion, IconoBasura } from '../../../../components/ui/Icono'
 import FormEmergencia from './FormEmergencia'
 import '../../estilos-panel.css'
 import './Emergencias.css'
 
-/**
- * Registro de emergencias (panel privado).
- *
- * Permite agregar la última emergencia atendida, eligiendo el TIPO
- * desde un selector (códigos de llamado 10-X) y agregando una
- * DESCRIPCIÓN y el sector. La más reciente queda destacada arriba.
- *
- * Quién puede registrar: oficialidad (director, capitán, tenientes).
- * El resto visualiza el historial.
- *
- * Alineado con el modelo Emergencia del backend (clave, nombre,
- * descripcion, sector, hora, fecha) para facilitar la conexión.
- *
- * Maqueta: los cambios viven en memoria (se reinician al recargar).
- */
 export default function Emergencias() {
   const { rango, tipo } = useSesion()
+  const API_URL = import.meta.env.VITE_API_URL
 
   const rangoActual = rango ? rango.toLowerCase() : ''
   const tipoActual = tipo ? tipo.toLowerCase() : ''
-
-  // Roles que pueden registrar emergencias.
   const rolesRegistran = ['director', 'capitán', 'capitan', 'teniente']
-  const registra =
-    rolesRegistran.includes(rangoActual) || rolesRegistran.includes(tipoActual)
+  const registra = rolesRegistran.includes(rangoActual) || rolesRegistran.includes(tipoActual)
 
-  const [emergencias, setEmergencias] = useState(emergenciasData)
+  const [emergencias, setEmergencias] = useState([])
   const [registrando, setRegistrando] = useState(false)
 
-  // Registrar una nueva emergencia (queda al inicio de la lista).
-  const registrarEmergencia = (datos) => {
-    const ahora = new Date()
-    const nueva = {
-      id: `A-${Math.floor(1000 + Math.random() * 9000)}`,
-      fecha: ahora.toISOString().slice(0, 10),
-      hora: ahora.toTimeString().slice(0, 5),
-      // "clave" combina el código y el nombre del tipo, como el
-      // formato que ya usa la plataforma (ej. "10-0 · Incendio...").
-      clave: `${datos.claveTipo} · ${datos.nombreTipo}`,
-      descripcion: datos.descripcion,
-      sector: datos.sector,
+  // 1. OBTENER EMERGENCIAS
+  const cargarEmergencias = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/Operacion/emergencias/listar/`)
+      if (res.ok) {
+        const data = await res.json()
+        setEmergencias(data)
+      }
+    } catch (error) {
+      console.error("Error al cargar emergencias:", error)
     }
-    setEmergencias((prev) => [nueva, ...prev])
-    setRegistrando(false)
   }
 
-  // Eliminar una emergencia del registro (solo quien registra).
-  const eliminarEmergencia = (id) => {
+  useEffect(() => {
+    cargarEmergencias()
+  }, [API_URL])
+
+  // 2. REGISTRAR EMERGENCIA (POST)
+  const registrarEmergencia = async (datos) => {
+    const ahora = new Date()
+    const payload = {
+      ...datos,
+      fecha: ahora.toISOString().slice(0, 10),
+      hora: ahora.toTimeString().slice(0, 5)
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/Operacion/emergencias/crear/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (res.ok) {
+        setRegistrando(false)
+        cargarEmergencias() // Recargamos para obtener el ID real de la BD
+      } else {
+        const err = await res.json()
+        alert(`Error al registrar: ${err.error}`)
+      }
+    } catch (error) {
+      console.error("Error:", error)
+    }
+  }
+
+  // 3. ELIMINAR EMERGENCIA (DELETE)
+  const eliminarEmergencia = async (id) => {
     if (!window.confirm('¿Eliminar este registro de emergencia?')) return
-    setEmergencias((prev) => prev.filter((e) => e.id !== id))
+    
+    try {
+      const res = await fetch(`${API_URL}/api/Operacion/emergencias/eliminar/${id}/`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        setEmergencias((prev) => prev.filter((e) => e.id !== id))
+      }
+    } catch (error) {
+      console.error("Error al eliminar:", error)
+    }
   }
 
-  // La más reciente (primera de la lista).
   const ultima = emergencias[0]
   const resto = emergencias.slice(1)
 
@@ -82,7 +101,6 @@ export default function Emergencias() {
         </div>
       )}
 
-      {/* Última emergencia destacada */}
       {ultima && (
         <div className="ultima-emergencia">
           <span className="ultima-emergencia__rotulo">
@@ -104,7 +122,6 @@ export default function Emergencias() {
         </div>
       )}
 
-      {/* Historial del resto */}
       <div className="panel-box">
         <div className="panel-box__titulo">Historial reciente</div>
         <div className="tabla-scroll">
