@@ -112,14 +112,13 @@ def inscribir_bombero(request):
 
 @api_view(['GET'])
 def listar_cursos(request):
-    # Traemos todos los cursos de la base de datos (puedes ordenarlos por fecha si quieres)
+    # Traemos todos los cursos de la base de datos
     cursos = Curso.objects.all().order_by('-fecha')
     serializer = CursoSerializer(cursos, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
 def crear_curso(request):
-    # Recibe los datos desde React (nombre, oficial_a_cargo, fecha, cupos)
     serializer = CursoSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -165,7 +164,6 @@ def desinscribir_curso(request):
         )
 
     try:
-        # Django usa el sufijo _id automáticamente para buscar por las llaves foráneas
         inscripcion = Inscripcion_Curso.objects.get(
             bombero_id=rut_bombero,
             curso_id=id_curso
@@ -216,7 +214,6 @@ def crear_emergencia(request):
 
     try:
         with transaction.atomic():
-            # 1. CREAMOS LA ACTIVIDAD EN SEGUNDO PLANO
             actividad = Actividad.objects.create(
                 tipo="Emergencia",
                 descripcion=f"Llamado {clave} en {sector}",
@@ -224,7 +221,6 @@ def crear_emergencia(request):
                 hora=hora
             )
 
-            # 2. CREAMOS LA EMERGENCIA ENLAZADA A ESA ACTIVIDAD
             emergencia = Emergencia.objects.create(
                 clave=clave,
                 nombre=nombre,
@@ -243,7 +239,6 @@ def crear_emergencia(request):
 def eliminar_emergencia(request, id_emergencia):
     try:
         emergencia = Emergencia.objects.get(id_emergencia=id_emergencia)
-        # Al borrar la emergencia, borramos también su actividad en segundo plano
         actividad = emergencia.id_actividad
         emergencia.delete()
         if actividad:

@@ -148,3 +148,14 @@ class Excepcion_DisponibilidadSerializer(serializers.ModelSerializer):
         model = Excepcion_Disponibilidad
 
         fields = '__all__'
+
+
+class NoticiaSerializer(serializers.ModelSerializer):
+
+    creado_por = BomberoSerializer(read_only=True)
+
+    class Meta:
+
+        model = Noticias
+
+        fields = '__all__'

@@ -10,10 +10,7 @@ import { descargarCursoPDF } from './descargarCursoPDF'
 import '../../estilos-panel.css'
 import './Cursos.css'
 
-// ELIMINADO: import { cursos as cursosData } from '../../../../data/personal'
-
 export default function Cursos() {
-  // EXTRAEMOS EL RUT (o ID) de la sesión para enviarlo a Django al crear o inscribir
   const { nombreCompleto, rango, tipo, rut } = useSesion() 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -26,7 +23,6 @@ export default function Cursos() {
   const puedeInscribirse = true 
   const veInscritos = esOficial 
 
-  // INICIAMOS VACÍO: La data ahora vendrá del backend
   const [cursos, setCursos] = useState([])
   const [editando, setEditando] = useState(null)
 
@@ -58,7 +54,6 @@ export default function Cursos() {
     const cursoActual = cursos.find(c => c.id_curso === idCurso || c.id === idCurso);
     const yaEsta = estoyInscrito(cursoActual);
 
-    // Si ya está inscrito, se requiere un endpoint DELETE en Django para anular (si lo permites)
     if (yaEsta) {
       if (!window.confirm("¿Seguro que deseas anular tu inscripción a este curso?")) return;
 
@@ -68,12 +63,11 @@ export default function Cursos() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id_curso: idCurso,
-            rut_bombero: rut // Pasamos el RUT desde la sesión
+            rut_bombero: rut 
           })
         });
 
         if (respuesta.ok) {
-          // Actualizamos React: sacamos al usuario de la lista de inscritos
           setCursos((prev) =>
             prev.map((c) => {
               const currId = c.id_curso || c.id;
@@ -97,22 +91,20 @@ export default function Cursos() {
       } catch (error) {
         console.error("Error al desinscribirse:", error);
       }
-      return; // Terminamos la ejecución aquí si se desinscribió
+      return;
     }
 
     try {
-      // Usamos los mismos nombres que definiste en request.data.get() de tu vista Django
       const respuesta = await fetch(`${API_URL}/api/Operacion/cursos/inscribir/`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id_curso: idCurso,
-          rut_bombero: rut // Pasamos el RUT desde la sesión
+          rut_bombero: rut 
         })
       });
 
       if (respuesta.ok) {
-        // Actualizamos React instantáneamente sin tener que recargar la página
         setCursos((prev) =>
           prev.map((c) => {
             const currId = c.id_curso || c.id;
@@ -143,10 +135,9 @@ export default function Cursos() {
   const guardarCurso = async (datos) => {
     const esNuevo = !datos.id && !datos.id_curso;
     
-    // CORRECCIÓN DE RUTAS: Apuntamos exactamente a las URLs de tu Django
     const url = esNuevo 
       ? `${API_URL}/api/Operacion/Cursos/crear/` 
-      : `${API_URL}/api/Operacion/Cursos/editar/${datos.id || datos.id_curso}/`; // Necesitarás crear esta vista en Django luego
+      : `${API_URL}/api/Operacion/Cursos/editar/${datos.id || datos.id_curso}/`;
       
     const metodo = esNuevo ? 'POST' : 'PUT';
 
@@ -166,8 +157,8 @@ export default function Cursos() {
       });
 
       if (respuesta.ok) {
-        const cursoGuardadoInfo = await respuesta.json(); // Esto recibe {"mensaje": "...", "data": {...}}
-        const cursoGuardado = cursoGuardadoInfo.data; // Extraemos la data real
+        const cursoGuardadoInfo = await respuesta.json();
+        const cursoGuardado = cursoGuardadoInfo.data;
 
         if (esNuevo) {
           setCursos((prev) => [cursoGuardado, ...prev]);
@@ -245,13 +236,11 @@ export default function Cursos() {
 
       <div className="cursos-grid">
         {cursos.map((curso) => {
-          // Adaptamos los nombres de variables según tu Django backend
           const idActual = curso.id_curso || curso.id;
           const creador = getRango(curso.oficial_a_cargo) || { numero: '', nombre: 'Oficial', persona: 'Oficial' }
           const listaInscritos = curso.inscritos || [];
           const anotados = listaInscritos.length;
           
-          // Verificamos el estado contra la BD de Django y los cupos
           const cerrado = curso.estado === "CERRADO" || anotados >= curso.cupos;
           
           const mostrarLista = cerrado || veInscritos

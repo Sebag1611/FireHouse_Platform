@@ -1,63 +1,146 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSesion } from '../../context/SesionContext'
-import { noticiasInternas } from '../../../../data/personal'
 import { IconoLapiz, IconoBasura, IconoSubir, IconoOjo } from '../../../../components/ui/Icono'
 import FormNoticia from './FormNoticia'
 import '../../estilos-panel.css'
 import './NoticiasInternas.css'
 
-/**
- * Noticias internas de la compañía (panel privado).
- *
- * Las gestiona la SECRETARÍA (agregar, editar, eliminar). El rol
- * 'secretaria' se deja preparado; mientras no exista en el backend,
- * también puede gestionarlas el director (y capitán). Cualquier otro
- * rango solo las visualiza.
- *
- * Las noticias pueden tener foto o no.
- *
- * Maqueta: los cambios viven en memoria (se reinician al recargar).
- * Al conectar el backend, se reemplazan por llamadas a la API.
- */
 export default function NoticiasInternas() {
-  const { rango, tipo } = useSesion()
+  const { rut, rango, tipo } = useSesion()
 
   const rangoActual = rango ? rango.toLowerCase() : ''
   const tipoActual = tipo ? tipo.toLowerCase() : ''
 
-  // Roles que pueden gestionar noticias. 'secretaria' queda listo
-  // para cuando exista en el backend; por ahora, director y capitán.
-  const rolesGestores = ['secretaria', 'director', 'capitán', 'capitan']
-  const gestiona =
-    rolesGestores.includes(rangoActual) || rolesGestores.includes(tipoActual)
+  const rolesGestores = [
+    'secretaria', 
+    'director', 
+    'directora', 
+    'capitán', 
+    'capitan', 
+    'teniente',
+    'teniente 1',
+    'teniente 2',
+    'teniente 3',
+    'teniente primero',
+    'teniente segundo',
+    'teniente tercero'
+  ]
+  
+  const gestiona = rolesGestores.some(rol => 
+    rangoActual.includes(rol) || tipoActual.includes(rol)
+  )
 
-  // Lista local (maqueta).
-  const [noticias, setNoticias] = useState(noticiasInternas)
-  // Estado del formulario: null (cerrado), 'nueva' o el objeto a editar.
+  const [noticias, setNoticias] = useState([])
+  const [cargando, setCargando] = useState(true)
   const [editando, setEditando] = useState(null)
+  const API_URL = import.meta.env.VITE_API_URL
 
-  // Crear o actualizar una noticia.
-  const guardar = (datos) => {
-    if (datos.id) {
-      setNoticias((prev) => prev.map((n) => (n.id === datos.id ? { ...n, ...datos } : n)))
-    } else {
-      setNoticias((prev) => [
-        {
-          ...datos,
-          id: Date.now(),
-          fecha: new Date().toISOString().slice(0, 10),
-          autor: 'Secretaría',
-        },
-        ...prev,
-      ])
+  // 1. Cargar noticias desde el Backend
+  const cargarNoticias = async () => {
+    try {
+      setCargando(true)
+      const res = await fetch(`${API_URL}/api/Administracion/noticias/`)
+      if (!res.ok) throw new Error('Error al obtener noticias')
+      const data = await res.json()
+      setNoticias(data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setCargando(false)
     }
-    setEditando(null)
   }
 
-  // Eliminar una noticia.
-  const eliminar = (id) => {
+  useEffect(() => {
+    cargarNoticias()
+  }, [])
+
+  // 2. Crear o actualizar noticia
+  const guardar = async (datos) => {
+    try {
+      if (datos.id) {
+        // --- MODO EDICIÓN (PUT) ---
+        const payload = {
+          rut: rut,
+          titulo: datos.titulo,
+          cuerpo: datos.cuerpo,
+          categoria: datos.categoria || 'Internas',
+          foto: datos.foto || null,
+        }
+
+        const res = await fetch(`${API_URL}/api/Administracion/noticias/editar/${datos.id}/`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+
+        if (!res.ok) {
+          const texto = await res.text()
+          try {
+            const errJson = JSON.parse(texto)
+            alert(errJson.error || 'No se pudo editar la noticia.')
+          } catch {
+            alert(`Error del servidor (${res.status}).`)
+          }
+          return
+        }
+      } else {
+        // --- MODO CREACIÓN (POST) ---
+        const payload = {
+          rut: rut,
+          titulo: datos.titulo,
+          cuerpo: datos.cuerpo,
+          categoria: datos.categoria || 'Internas',
+          foto: datos.foto || null
+        }
+
+        const res = await fetch(`${API_URL}/api/Administracion/noticias/crear/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+
+        if (!res.ok) {
+          const texto = await res.text()
+          try {
+            const errJson = JSON.parse(texto)
+            alert(errJson.error || 'No se pudo publicar la noticia.')
+          } catch {
+            alert(`Error del servidor (${res.status}).`)
+          }
+          return
+        }
+      }
+
+      // Recargar lista actualizada desde Supabase/Django
+      await cargarNoticias()
+      setEditando(null)
+    } catch (err) {
+      console.error(err)
+      alert('Error de conexión al procesar la noticia.')
+    }
+  }
+
+  // 3. Eliminar noticia en Django
+  const eliminar = async (id) => {
     if (!window.confirm('¿Eliminar esta noticia? Esta acción no se puede deshacer.')) return
-    setNoticias((prev) => prev.filter((n) => n.id !== id))
+
+    try {
+      const res = await fetch(`${API_URL}/api/Administracion/noticias/eliminar/${id}/?rut=${rut}`, {
+        method: 'DELETE'
+      })
+
+      const resData = await res.json()
+      if (!res.ok) {
+        alert(resData.error || 'Error al eliminar la noticia.')
+        return
+      }
+
+      // Filtramos en pantalla
+      setNoticias((prev) => prev.filter((n) => n.id !== id))
+    } catch (err) {
+      console.error(err)
+      alert('Error de conexión al eliminar.')
+    }
   }
 
   return (
@@ -67,7 +150,7 @@ export default function NoticiasInternas() {
         <p>Novedades y avisos internos de la compañía.</p>
       </div>
 
-      {/* Botón crear: solo quien gestiona. */}
+      {/* Botón crear: solo quien gestiona */}
       {gestiona ? (
         <div className="noticias-acciones">
           <button className="btn btn-primario" onClick={() => setEditando('nueva')}>
@@ -81,47 +164,49 @@ export default function NoticiasInternas() {
         </div>
       )}
 
-      {noticias.length === 0 && (
+      {cargando ? (
+        <div className="panel-box noticias-vacio">Cargando noticias...</div>
+      ) : noticias.length === 0 ? (
         <div className="panel-box noticias-vacio">
           No hay noticias publicadas por el momento.
         </div>
+      ) : (
+        <div className="noticias-lista">
+          {noticias.map((n) => (
+            <article className="noticia-card" key={n.id}>
+              {/* Foto opcional */}
+              {n.foto && (
+                <div className="noticia-card__foto">
+                  <img src={n.foto} alt={n.titulo} />
+                </div>
+              )}
+
+              <div className="noticia-card__cuerpo">
+                <div className="noticia-card__top">
+                  <h2>{n.titulo}</h2>
+                  <time>{n.fecha}</time>
+                </div>
+                <p>{n.cuerpo}</p>
+                <div className="noticia-card__pie">
+                  <span className="noticia-card__autor">{n.autor || 'Oficialidad'}</span>
+                  {gestiona && (
+                    <div className="noticia-card__acciones">
+                      <button className="btn-mini" onClick={() => setEditando(n)}>
+                        <IconoLapiz width={13} /> Editar
+                      </button>
+                      <button className="btn-mini btn-mini--peligro" onClick={() => eliminar(n.id)}>
+                        <IconoBasura width={13} /> Eliminar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       )}
 
-      <div className="noticias-lista">
-        {noticias.map((n) => (
-          <article className="noticia-card" key={n.id}>
-            {/* Foto opcional */}
-            {n.foto && (
-              <div className="noticia-card__foto">
-                <img src={n.foto} alt={n.titulo} />
-              </div>
-            )}
-
-            <div className="noticia-card__cuerpo">
-              <div className="noticia-card__top">
-                <h2>{n.titulo}</h2>
-                <time>{n.fecha}</time>
-              </div>
-              <p>{n.cuerpo}</p>
-              <div className="noticia-card__pie">
-                <span className="noticia-card__autor">{n.autor}</span>
-                {gestiona && (
-                  <div className="noticia-card__acciones">
-                    <button className="btn-mini" onClick={() => setEditando(n)}>
-                      <IconoLapiz width={13} /> Editar
-                    </button>
-                    <button className="btn-mini btn-mini--peligro" onClick={() => eliminar(n.id)}>
-                      <IconoBasura width={13} /> Eliminar
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {/* Formulario crear/editar */}
+      {/* Modal crear / editar */}
       {editando && (
         <FormNoticia
           noticia={editando === 'nueva' ? null : editando}

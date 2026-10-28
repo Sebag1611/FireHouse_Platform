@@ -2,16 +2,11 @@ import { useState } from 'react'
 import { IconoCerrar, IconoCheck } from '../../../../components/ui/Icono'
 
 /**
- * Formulario para crear o editar una noticia interna.
+ * Formulario para crear o editar una noticia interna/pública.
  *
  * @param {object|null} noticia - Noticia a editar, o null para crear.
  * @param {function} onGuardar - Recibe los datos de la noticia.
  * @param {function} onCerrar  - Cierra sin guardar.
- *
- * La foto es OPCIONAL. En la maqueta se ingresa como una URL/ruta de
- * imagen; si se deja vacía, la noticia se publica sin foto. Al
- * conectar el backend, aquí se puede cambiar por una subida de
- * archivo real.
  */
 export default function FormNoticia({ noticia, onGuardar, onCerrar }) {
   const esEdicion = Boolean(noticia)
@@ -19,6 +14,7 @@ export default function FormNoticia({ noticia, onGuardar, onCerrar }) {
   const [form, setForm] = useState({
     titulo: noticia?.titulo ?? '',
     cuerpo: noticia?.cuerpo ?? '',
+    categoria: noticia?.categoria ?? 'Internas',
     foto: noticia?.foto ?? '',
   })
   const [error, setError] = useState('')
@@ -37,7 +33,7 @@ export default function FormNoticia({ noticia, onGuardar, onCerrar }) {
       ...(esEdicion ? { id: noticia.id } : {}),
       titulo: form.titulo.trim(),
       cuerpo: form.cuerpo.trim(),
-      // Si no se ingresó foto, se guarda null (noticia sin imagen).
+      categoria: form.categoria,
       foto: form.foto.trim() || null,
     })
   }
@@ -59,7 +55,22 @@ export default function FormNoticia({ noticia, onGuardar, onCerrar }) {
               value={form.titulo}
               onChange={(e) => cambiar('titulo', e.target.value)}
               placeholder="Título de la noticia"
+              maxLength={150}
             />
+          </label>
+
+          <label className="campo-form">
+            Categoría *
+            <select
+              value={form.categoria}
+              onChange={(e) => cambiar('categoria', e.target.value)}
+            >
+              <option value="Internas">Internas</option>
+              <option value="Público">Público</option>
+            </select>
+            <span className="campo-form__ayuda">
+              Si eliges "Público", se mostrará en la página principal del cuartel.
+            </span>
           </label>
 
           <label className="campo-form">
@@ -69,6 +80,7 @@ export default function FormNoticia({ noticia, onGuardar, onCerrar }) {
               value={form.cuerpo}
               onChange={(e) => cambiar('cuerpo', e.target.value)}
               placeholder="Escribe el contenido de la noticia..."
+              maxLength={300}
             />
           </label>
 

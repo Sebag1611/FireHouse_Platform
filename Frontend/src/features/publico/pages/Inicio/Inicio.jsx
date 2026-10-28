@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  turnoActual,
-  noticias, // Eliminamos 'unidades' de la importación estática
-} from '../../../../data/contenidoPublico'
+import { turnoActual } from '../../../../data/contenidoPublico'
 import EstadoBadge from '../../../../components/ui/EstadoBadge'
 import EmergenciasResumen from '../../../../components/ui/EmergenciasResumen'
 import {
@@ -23,6 +20,7 @@ export default function Inicio() {
   // Estados para los datos de la base de datos
   const [emergenciasRecientes, setEmergenciasRecientes] = useState([])
   const [listaUnidades, setListaUnidades] = useState([])
+  const [noticiasPublicas, setNoticiasPublicas] = useState([])
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -47,12 +45,27 @@ export default function Inicio() {
       } catch (error) {
         console.error("Error al cargar las unidades en el inicio:", error)
       }
+
+      // 3. Cargar solo Noticias Públicas desde Django
+      try {
+        const resNoticias = await fetch(`${API_URL}/api/Administracion/noticias/`)
+        if (resNoticias.ok) {
+          const dataNoticias = await resNoticias.json()
+          // Filtramos solo aquellas cuya categoría sea público (insensible a tildes o mayúsculas)
+          const soloPublicas = dataNoticias.filter(n => {
+            const cat = (n.categoria || '').toLowerCase()
+            return cat === 'público' || cat === 'publico'
+          })
+          setNoticiasPublicas(soloPublicas)
+        }
+      } catch (error) {
+        console.error("Error al cargar noticias en el inicio:", error)
+      }
     }
     
     cargarDatos()
   }, [API_URL])
 
-  // Calculamos dinámicamente las unidades disponibles usando la BD para la estadística de arriba
   const disponibles = listaUnidades.filter(
     (u) => u.estado && u.estado.toLowerCase() === 'disponible'
   ).length
@@ -240,7 +253,6 @@ export default function Inicio() {
           <div className="unidades-preview">
             {listaUnidades.slice(0, 3).map((u) => (
               <article className="unidad-mini" key={u.id || u.codigo}>
-                {/* Ajustamos las propiedades según cómo llegan desde el backend */}
                 <div className="unidad-mini__id">{u.codigo || u.id}</div>
                 <h3>{u.nombre || u.codigo}</h3>
                 <p>{u.tipo || u.descripcion}</p>
@@ -254,21 +266,29 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* ---------- NOTICIAS DESTACADAS ---------- */}
+      {/* ---------- NOTICIAS PÚBLICAS DESTACADAS ---------- */}
       <section className="seccion seccion--alt">
         <div className="contenedor">
           <span className="eyebrow">Comunidad</span>
           <h2 className="titulo-seccion">Últimas noticias</h2>
-          <div className="noticias-preview">
-            {noticias.slice(0, 2).map((n) => (
-              <article className="noticia-mini" key={n.id}>
-                <span className="noticia-mini__cat">{n.categoria}</span>
-                <h3>{n.titulo}</h3>
-                <p>{n.resumen}</p>
-                <time>{formatearFecha(n.fecha)}</time>
-              </article>
-            ))}
-          </div>
+          
+          {noticiasPublicas.length === 0 ? (
+            <p style={{ color: 'var(--color-texto-apagado, #888)' }}>
+              No hay noticias públicas publicadas recientemente.
+            </p>
+          ) : (
+            <div className="noticias-preview">
+              {noticiasPublicas.slice(0, 2).map((n) => (
+                <article className="noticia-mini" key={n.id}>
+                  <span className="noticia-mini__cat">{n.categoria}</span>
+                  <h3>{n.titulo}</h3>
+                  <p>{n.cuerpo || n.resumen}</p>
+                  <time>{formatearFecha(n.fecha)}</time>
+                </article>
+              ))}
+            </div>
+          )}
+
           <Link to="/noticias" className="btn btn-fantasma" style={{ marginTop: 28 }}>
             Ver todas las noticias <IconoFlecha width={16} />
           </Link>
@@ -293,7 +313,6 @@ export default function Inicio() {
 }
 
 function formatearFecha(iso) {
-  // Verificamos que la fecha exista para no romper el código
   if (!iso) return ''
   return new Date(iso + 'T00:00:00').toLocaleDateString('es-CL', {
     day: '2-digit',

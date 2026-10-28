@@ -16,4 +16,10 @@ urlpatterns = [
     path('cambiar-contrasena/', views.cambiar_contraseña),
     path('solicitar-recuperacion/', views.solicitar_recuperacion),
     path('recuperar-contrasena/', views.cambiar_contraseña_recuperada),
+
+    #Noticias
+    path('noticias/', views.listar_noticias),
+    path('noticias/crear/', views.crear_noticia),
+    path('noticias/eliminar/<int:id_noticia>/', views.eliminar_noticia),
+    path('noticias/editar/<int:id_noticia>/', views.editar_noticia),
 ]

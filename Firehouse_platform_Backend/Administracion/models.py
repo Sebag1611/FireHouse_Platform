@@ -21,7 +21,7 @@ class Bombero(models.Model):
     fecha_ingreso = models.DateField(null=True, blank=True)
     rango = models.CharField(max_length=100)
     nivel = models.CharField(max_length=100)
-    estado = models.BooleanField(max_length=50, default=True)
+    estado = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Bombero: {self.rut}"
@@ -390,3 +390,45 @@ class Excepcion_Disponibilidad(models.Model):
     def __str__(self):
 
         return f"{self.bombero} - {self.tipo}"
+
+class Noticias(models.Model):
+    id_noticias = models.AutoField(
+        primary_key=True
+    )
+
+    bombero = models.ForeignKey(
+        Bombero,
+        on_delete=models.CASCADE,
+        db_column="RUT"
+    )
+
+    titulo_Noticia = models.CharField(
+        max_length=150,
+        db_column="Titulo"
+    )
+
+    cuerpo = models.CharField(
+        max_length=300,
+        db_column="Cuerpo"
+    )
+
+    categoria = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        db_column="Categoria"
+    )
+
+    foto = models.TextField(
+        null=True, 
+        blank=True,
+        db_column="Foto"
+    )
+
+    fecha_publicacion = models.DateField(
+        auto_now_add=True,
+        db_column="Fecha_Publicacion"
+    )
+
+    def __str__(self):
+        return self.titulo_Noticia

@@ -52,7 +52,7 @@ export default function Emergencias() {
       })
       if (res.ok) {
         setRegistrando(false)
-        cargarEmergencias() // Recargamos para obtener el ID real de la BD
+        cargarEmergencias()
       } else {
         const err = await res.json()
         alert(`Error al registrar: ${err.error}`)

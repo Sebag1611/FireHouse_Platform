@@ -11,6 +11,21 @@ from Administracion.serializers import *
 from Operacion.models import *
 import random
 
+# 2. CONSTANTES Y CONFIGURACIONES
+ROLES_AUTORIZADOS_NOTICIAS = [
+    "director",
+    "directora",
+    "capitan",
+    "capitán",
+    "teniente",
+    "teniente 1",
+    "teniente 2",
+    "teniente 3",
+    "teniente primero",
+    "teniente segundo",
+    "teniente tercero",
+]
+
 # VALIDAR RUT CHILENO
 
 def validar_rut(rut):
@@ -807,5 +822,151 @@ def listar_personal(request):
                 "estado": "activo" # O el estado que tengas en tu BD
             })
         return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#Noticias
+def tiene_permiso_noticias(rut_bombero):
+    if not rut_bombero:
+        return False, None
+    bombero = Bombero.objects.filter(rut__rut=rut_bombero).first()
+    if not bombero:
+        return False, None
+    
+    rango_actual = (bombero.rango or "").lower().strip()
+    autorizado = any(rol in rango_actual for rol in ROLES_AUTORIZADOS_NOTICIAS)
+    return autorizado, bombero
+
+@api_view(["GET"])
+def listar_noticias(request):
+    try:
+        noticias = Noticias.objects.select_related('bombero__rut').all().order_by('-id_noticias')
+        
+        data = []
+        for n in noticias:
+            persona = n.bombero.rut
+            autor_nombre = f"{persona.nombres} {persona.apellidos}"
+            
+            data.append({
+                "id": n.id_noticias,
+                "titulo": n.titulo_Noticia,
+                "cuerpo": n.cuerpo,
+                "resumen": n.cuerpo,
+                "categoria": n.categoria or "General",
+                "foto": n.foto,
+                "fecha": n.fecha_publicacion.strftime("%Y-%m-%d") if n.fecha_publicacion else "",
+                "autor": autor_nombre,
+                "rut_autor": persona.rut
+            })
+            
+        return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["POST"])
+def crear_noticia(request):
+    try:
+        data = request.data
+        rut_bombero = data.get("rut")
+        
+        autorizado, bombero = tiene_permiso_noticias(rut_bombero)
+        if not autorizado:
+            return Response(
+                {"error": "No tienes los permisos requeridos para publicar noticias."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        titulo = data.get("titulo")
+        cuerpo = data.get("cuerpo")
+        categoria = data.get("categoria", "General")
+        foto = data.get("foto", None)
+
+        if not titulo or not cuerpo:
+            return Response(
+                {"error": "El título y el cuerpo son obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        nueva_noticia = Noticias.objects.create(
+            bombero=bombero,
+            titulo_Noticia=titulo,
+            cuerpo=cuerpo,
+            categoria=categoria,
+            foto=foto
+        )
+
+        return Response(
+            {"mensaje": "Noticia publicada con éxito.", "id": nueva_noticia.id_noticias},
+            status=status.HTTP_201_CREATED
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def eliminar_noticia(request, id_noticia):
+    try:
+        rut_solicitante = request.query_params.get("rut") or request.data.get("rut")
+        
+        autorizado, _ = tiene_permiso_noticias(rut_solicitante)
+        if not autorizado:
+            return Response(
+                {"error": "No tienes permisos para eliminar comunicados oficiales."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        noticia = Noticias.objects.filter(id_noticias=id_noticia).first()
+        if not noticia:
+            return Response(
+                {"error": "La noticia no existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        noticia.delete()
+        return Response(
+            {"mensaje": "Noticia eliminada correctamente."},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["PUT"])
+def editar_noticia(request, id_noticia):
+    try:
+        rut_solicitante = request.data.get("rut")
+        
+        autorizado, _ = tiene_permiso_noticias(rut_solicitante)
+        if not autorizado:
+            return Response(
+                {"error": "No tienes permisos para editar comunicados oficiales."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        noticia = Noticias.objects.filter(id_noticias=id_noticia).first()
+        if not noticia:
+            return Response(
+                {"error": "La noticia no existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        titulo = request.data.get("titulo")
+        cuerpo = request.data.get("cuerpo")
+        categoria = request.data.get("categoria", "General")
+        foto = request.data.get("foto", None)
+
+        if titulo:
+            noticia.titulo_Noticia = titulo
+        if cuerpo:
+            noticia.cuerpo = cuerpo
+        noticia.categoria = categoria
+        if foto is not None:
+            noticia.foto = foto
+
+        noticia.save()
+
+        return Response(
+            {"mensaje": "Noticia editada correctamente."},
+            status=status.HTTP_200_OK
+        )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
